@@ -23,9 +23,11 @@ Class FreydCategory
 { freyd_C                     :  Category Ob HomC                       }
 { freyd_C_terminal            :  Terminal    freyd_C                    }
 { freyd_C_binoidal            :  BinoidalCat freyd_C freyd_bobj         }
-( freyd_C_monoidal            :  PreMonoidalCat freyd_C_binoidal 1         ) :=
-{ freyd_K_hom                 :  Ob -> Ob -> Type
-; freyd_K                     :> Category Ob freyd_K_hom
+( freyd_C_monoidal            :  PreMonoidalCat freyd_C_binoidal 1      )
+{ freyd_K_hom                 :  Ob -> Ob -> Type                       }
+( freyd_K                     :  Category Ob freyd_K_hom                )
+:=
+{ freyd_K_                    := freyd_K
 ; freyd_C_cartesian           :  CartesianCat freyd_C_monoidal
 ; freyd_K_binoidal            :> BinoidalCat  freyd_K freyd_bobj
 ; freyd_K_monoidal            :> PreMonoidalCat  freyd_K_binoidal (one(Terminal:=freyd_C_terminal))
@@ -41,4 +43,4 @@ Class FreydCategory
 }.
 Coercion freyd_K_monoidal : FreydCategory >-> PreMonoidalCat.
 Coercion freyd_F          : FreydCategory >-> PreMonoidalFunctor.
-Coercion freyd_K          : FreydCategory >-> Category.
+Coercion freyd_K_         : FreydCategory >-> Category.
