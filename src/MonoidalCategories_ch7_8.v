@@ -194,19 +194,6 @@ Class DiagonalCat `(BinoidalCat) :=
 (* copy >> swap == copy  -- only necessary for non-cartesian braided diagonal categories *)
 }.
 
-Class CartesianCat `(mc:PreMonoidalCat(C:=C)) :=
-{ car_terminal  : Terminal C
-; car_one       : 1 ≅ pmon_I
-; car_diagonal  : DiagonalCat mc
-; car_law1      : forall {a}, id a ~~ (copy(DiagonalCat:=car_diagonal) _) >>> ((drop a >>> #car_one) ⋉ a) >>> (#(pmon_cancell mc _))
-; car_law2      : forall {a}, id a ~~ (copy(DiagonalCat:=car_diagonal) _) >>> (a ⋊ (drop a >>> #car_one)) >>> (#(pmon_cancelr mc _))
-; car_cat       := C
-; car_mn        := mc
-}.
-Coercion car_diagonal : CartesianCat >-> DiagonalCat.
-Coercion car_terminal : CartesianCat >-> Terminal.
-Coercion car_mn       : CartesianCat >-> PreMonoidalCat.
-
 (* Definition 7.23 *)
 Class MonoidalCat `{C:Category}{Fobj:prod_obj C C -> C}{F:Functor (C ×× C) C Fobj}(I:C) :=
 { mon_f         := F
@@ -452,9 +439,18 @@ Section MonoidalFunctorsCompose.
   { mf_id        := id_comp         (mf_id mf2) (functors_preserve_isos f2 (mf_id mf1))
   ; mf_coherence := mf_compose_coherence
   }.
-  admit.
-  admit.
-  admit.
-  Defined.
+  Admitted.
 
 End MonoidalFunctorsCompose.
+
+Class CartesianCat `(mc:MonoidalCat) :=
+{ car_terminal  : Terminal mc
+; car_one       : (@one _ _ _ car_terminal) ≅ (mon_i mc)
+; car_diagonal  : DiagonalCat mc
+; car_law1      : forall {a}, id a ~~ (copy(DiagonalCat:=car_diagonal) _) >>> ((drop a >>> #car_one) ⋉ a) >>> (#(pmon_cancell mc _))
+; car_law2      : forall {a}, id a ~~ (copy(DiagonalCat:=car_diagonal) _) >>> (a ⋊ (drop a >>> #car_one)) >>> (#(pmon_cancelr mc _))
+; car_mn        := mc
+}.
+Coercion car_diagonal : CartesianCat >-> DiagonalCat.
+Coercion car_terminal : CartesianCat >-> Terminal.
+Coercion car_mn       : CartesianCat >-> MonoidalCat.
