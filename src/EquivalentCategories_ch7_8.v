@@ -1,13 +1,13 @@
-Generalizable All Variables.
-Require Import Preamble.
-Require Import General.
-Require Import ch1_3_Categories.
-Require Import ch1_4_Functors.               
-Require Import ch1_5_Isomorphisms.               
-
 (*******************************************************************************)
 (* Chapter 7.8: Equivalent Categories                                          *)
 (*******************************************************************************)
+
+Generalizable All Variables.
+Require Import Preamble.
+Require Import General.
+Require Import Categories_ch1_3.
+Require Import Functors_ch1_4.
+Require Import Isomorphisms_ch1_5.
 
 (* Definition 7.24 *)
 Class EquivalentCategories `(C:Category)`(D:Category){Fobj}{Gobj}(F:Functor C D Fobj)(G:Functor D C Gobj) :=
