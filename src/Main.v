@@ -27,7 +27,7 @@ Require Import Coherence_ch7_8.
 Require Import MonoidalCategories_ch7_8.
 
 Require Import Exponentials_ch6.
-Require Import CategoryOfCategories_ch7_1.
+(*Require Import CategoryOfCategories_ch7_1.*)
 Require Import Yoneda_ch8.
 Require Import Adjoints_ch9.
 
