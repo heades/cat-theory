@@ -96,8 +96,7 @@ Section BinoidalCat_from_Bifunctor.
           |}.
    Defined.
 
-  (*
-  Lemma Bifunctors_Create_Commutative_Binoidal_Categories : CommutativeCat (BinoidalCat_from_Bifunctor F).
+  Lemma Bifunctors_Create_Commutative_Binoidal_Categories : CommutativeCat BinoidalCat_from_Bifunctor.
   abstract (intros; apply Build_CommutativeCat; intros; apply Build_CentralMorphism; intros; simpl; (
     etransitivity; [ apply (fmor_preserves_comp(F)) | idtac ]; symmetry;
     etransitivity; [ apply (fmor_preserves_comp(F)) | idtac ];
@@ -106,7 +105,7 @@ Section BinoidalCat_from_Bifunctor.
       [ etransitivity; [ apply left_identity | symmetry; apply right_identity ]
       | etransitivity; [ apply right_identity | symmetry; apply left_identity ] ])).
   Defined.
-  *)
+
 End BinoidalCat_from_Bifunctor.
 
 (* not in Awodey *)
@@ -177,21 +176,17 @@ Coercion mf_F : PreMonoidalFunctor >-> Functor.
 (* Braided and Symmetric Categories                                            *)
 
 Class BraidedCat `(mc:PreMonoidalCat) :=
-{ br_swap      :  forall a b,   a⊗b ≅ b⊗a
-; triangleb    :  forall a:C,     #(pmon_cancelr mc a) ~~ #(br_swap a (pmon_I(PreMonoidalCat:=mc))) >>> #(pmon_cancell mc a)
-; hexagon1     :  forall {a b c}, #(pmon_assoc mc _ _ _) >>> #(br_swap a _) >>> #(pmon_assoc mc _ _ _)
-                                  ~~ #(br_swap _ _) ⋉ c >>> #(pmon_assoc mc _ _ _) >>> b ⋊ #(br_swap _ _)
-; hexagon2     :  forall {a b c}, #(pmon_assoc mc _ _ _)⁻¹ >>> #(br_swap _ c) >>> #(pmon_assoc mc _ _ _)⁻¹
-                                  ~~ a ⋊ #(br_swap _ _) >>> #(pmon_assoc mc _ _ _)⁻¹ >>> #(br_swap _ _) ⋉ b
+{ br_niso        : forall a, bin_first a <~~~> bin_second a
+; br_swap        := fun a b => ni_iso (br_niso b) a
+; triangleb      : forall a:C,     #(pmon_cancelr mc a) ~~ #(br_swap a (pmon_I(PreMonoidalCat:=mc))) >>> #(pmon_cancell mc a)
+; hexagon1       : forall {a b c}, #(pmon_assoc mc _ _ _) >>> #(br_swap a _) >>> #(pmon_assoc mc _ _ _)
+                                   ~~ #(br_swap _ _) ⋉ c >>> #(pmon_assoc mc _ _ _) >>> b ⋊ #(br_swap _ _)
+; hexagon2       : forall {a b c}, #(pmon_assoc mc _ _ _)⁻¹ >>> #(br_swap _ c) >>> #(pmon_assoc mc _ _ _)⁻¹
+                                   ~~ a ⋊ #(br_swap _ _) >>> #(pmon_assoc mc _ _ _)⁻¹ >>> #(br_swap _ _) ⋉ b
 }.
 
 Class SymmetricCat `(bc:BraidedCat) :=
 { symcat_swap  :  forall a b:C, #((br_swap(BraidedCat:=bc)) a b) ~~ #(br_swap _ _)⁻¹
-}.
-
-Class DiagonalCat `(BinoidalCat) :=
-{  copy         :  forall a, a ~> (a⊗a)
-(* copy >> swap == copy  -- only necessary for non-cartesian braided diagonal categories *)
 }.
 
 (* Definition 7.23 *)
@@ -199,7 +194,6 @@ Class MonoidalCat `{C:Category}{Fobj:prod_obj C C -> C}{F:Functor (C ×× C) C F
 { mon_f         := F
 ; mon_i         := I
 ; mon_c         := C
-(*; mon_bin       := BinoidalCat_from_Bifunctor mon_f*)
 ; mon_first     := fun a b c (f:a~>b) => F \ pair_mor (pair_obj a c) (pair_obj b c) f (id c)
 ; mon_second    := fun a b c (f:a~>b) => F \ pair_mor (pair_obj c a) (pair_obj c b) (id c) f
 ; mon_cancelr   :  (func_rlecnac I >>>> F) <~~~> functor_id C
@@ -209,19 +203,14 @@ Class MonoidalCat `{C:Category}{Fobj:prod_obj C C -> C}{F:Functor (C ×× C) C F
 ; mon_triangle  :  Triangle mon_first mon_second (fun a b c => #(mon_assoc (pair_obj (pair_obj a b) c)))
                                                  (fun a => #(mon_cancell a)) (fun a => #(mon_cancelr a))
 }.
-
-(* FIXME: show that the endofunctors on any given category form a monoidal category *)
-
 (* Coq manual on coercions: ... only the oldest one is valid and the
  * others are ignored. So the order of declaration of coercions is
  * important. *)
 Coercion mon_c   : MonoidalCat >-> Category.
-(*Coercion mon_bin : MonoidalCat >-> BinoidalCat.*)
 Coercion mon_f   : MonoidalCat >-> Functor.
 Implicit Arguments mon_f [Ob Hom C Fobj F I].
 Implicit Arguments mon_i [Ob Hom C Fobj F I].
 Implicit Arguments mon_c [Ob Hom C Fobj F I].
-(*Implicit Arguments mon_bin [Ob Hom C Fobj F I].*)
 Implicit Arguments MonoidalCat [Ob Hom ].
 
 Section MonoidalCat_is_PreMonoidal.
@@ -376,6 +365,15 @@ Hint Extern 1 => apply MonoidalCat_all_central.
 Coercion MonoidalCat_is_PreMonoidal : MonoidalCat >-> PreMonoidalCat.
 (*Lemma CommutativePreMonoidalCategoriesAreMonoidal `(pm:PreMonoidalCat)(cc:CommutativeCat pm) : MonoidalCat pm.*)
 
+(* Later: generalized to premonoidal categories *)
+Class DiagonalCat `(mc:MonoidalCat(F:=F)) :=
+{  copy_nt      :  forall a, functor_id _ ~~~> func_rlecnac a >>>> F
+;  copy         :  forall (a:mc),   a~~{mc}~~>(bin_obj(BinoidalCat:=mc) a a)
+                := fun a => nt_component _ _ (copy_nt a) a
+(* for non-cartesian braided diagonal categories we also need: copy >> swap == copy *)
+}.
+
+(* TO DO: show that the endofunctors on any given category form a monoidal category *)
 Section MonoidalFunctor.
   Context `(m1:MonoidalCat(C:=C1)) `(m2:MonoidalCat(C:=C2)).
   Class MonoidalFunctor {Mobj:C1->C2} (mf_F:Functor C1 C2 Mobj) :=
@@ -447,10 +445,33 @@ Class CartesianCat `(mc:MonoidalCat) :=
 { car_terminal  : Terminal mc
 ; car_one       : (@one _ _ _ car_terminal) ≅ (mon_i mc)
 ; car_diagonal  : DiagonalCat mc
-; car_law1      : forall {a}, id a ~~ (copy(DiagonalCat:=car_diagonal) _) >>> ((drop a >>> #car_one) ⋉ a) >>> (#(pmon_cancell mc _))
-; car_law2      : forall {a}, id a ~~ (copy(DiagonalCat:=car_diagonal) _) >>> (a ⋊ (drop a >>> #car_one)) >>> (#(pmon_cancelr mc _))
+; car_law1      : forall {a}, id a ~~ (copy(DiagonalCat:=car_diagonal) a) >>> ((drop a >>> #car_one) ⋉ a) >>> (#(pmon_cancell mc _))
+; car_law2      : forall {a}, id a ~~ (copy(DiagonalCat:=car_diagonal) a) >>> (a ⋊ (drop a >>> #car_one)) >>> (#(pmon_cancelr mc _))
 ; car_mn        := mc
 }.
 Coercion car_diagonal : CartesianCat >-> DiagonalCat.
 Coercion car_terminal : CartesianCat >-> Terminal.
 Coercion car_mn       : CartesianCat >-> MonoidalCat.
+
+Section CenterMonoidal.
+
+  Context `(mc:PreMonoidalCat(I:=pI)).
+
+  Definition CenterMonoidal_Fobj : (Center mc) ×× (Center mc) -> Center mc.
+    intro.
+    destruct X as [a b].
+    destruct a as [a apf].
+    destruct b as [b bpf].
+    exists (a ⊗ b); auto.
+    Defined.
+
+  Definition CenterMonoidal_F : Functor _ _ CenterMonoidal_Fobj.
+    admit.
+    Defined.
+
+  Definition CenterMonoidal  : MonoidalCat _ _ CenterMonoidal_F (exist _ pI I).
+    admit.
+    Defined.
+
+End CenterMonoidal.
+
