@@ -16,31 +16,28 @@ Require Import NaturalIsomorphisms_ch7_5.
 Require Import Coherence_ch7_8.
 Require Import MonoidalCategories_ch7_8.
 
+(* A Freyd Category is... *)
 Class FreydCategory
-{ Ob                          :  Type                                   }
-{ freyd_bobj                  :  Ob -> Ob -> Ob                         }
-{ HomC                        :  Ob -> Ob -> Type                       }
-{ freyd_C                     :  Category Ob HomC                       }
-{ freyd_C_terminal            :  Terminal    freyd_C                    }
-{ freyd_C_binoidal            :  BinoidalCat freyd_C freyd_bobj         }
-( freyd_C_monoidal            :  PreMonoidalCat freyd_C_binoidal 1      )
-{ freyd_K_hom                 :  Ob -> Ob -> Type                       }
-( freyd_K                     :  Category Ob freyd_K_hom                )
-:=
-{ freyd_K_                    := freyd_K
-; freyd_C_cartesian           :  CartesianCat freyd_C_monoidal
-; freyd_K_binoidal            :> BinoidalCat  freyd_K freyd_bobj
-; freyd_K_monoidal            :> PreMonoidalCat  freyd_K_binoidal (one(Terminal:=freyd_C_terminal))
-; freyd_K_braided             :  BraidedCat   freyd_K_monoidal
-; freyd_K_symmetric           :  SymmetricCat freyd_K_braided
-; freyd_F                     :> PreMonoidalFunctor freyd_C_monoidal freyd_K_monoidal (fun x => x)
-; freyd_F_central             :  forall `(f:a~~{freyd_C}~~>b), CentralMorphism(C:=freyd_K) (freyd_F \ f)
-; freyd_F_strict_first        : forall a b,   #(mf_preserves_first(PreMonoidalFunctor:=freyd_F) a b) ~~ id (bin_first a b)
-; freyd_F_strict_second       : forall a b,   #(mf_preserves_second(PreMonoidalFunctor:=freyd_F) a b) ~~ id (bin_second a b)
-; freyd_F_strict_a            : forall a b c, freyd_F \ #(pmon_assoc freyd_C_monoidal a b c) ~~ #(pmon_assoc freyd_K_monoidal _ _ _)
-; freyd_F_strict_cl           :  forall a,     freyd_F \ #(pmon_cancell freyd_C_monoidal a) ~~ #(pmon_cancell freyd_K_monoidal _)
-; freyd_F_strict_cr           :  forall a,     freyd_F \ #(pmon_cancelr freyd_C_monoidal a) ~~ #(pmon_cancelr freyd_K_monoidal _)
-}.
-Coercion freyd_K_monoidal : FreydCategory >-> PreMonoidalCat.
-Coercion freyd_F          : FreydCategory >-> PreMonoidalFunctor.
-Coercion freyd_K_         : FreydCategory >-> Category.
+
+  (* a cartesian category C *)
+  `(C:CartesianCat(Ob:=Ob)(C:=C1)(Fobj:=fun x => bobj (fst_obj _ _ x) (snd_obj _ _ x)))
+
+  (* a premonoidal category K with the same objects (its unit object is 1 because the functor is both IIO and strict) *)
+  `(K:PreMonoidalCat(Ob:=Ob)(bin_obj':=bobj)(I:=@one _ _ _ C))
+
+  (* an identity-on-objects functor J:C->Z(K) *)
+:= { fc_J       : Functor C (CenterMonoidal K) (fun x => exist _ x I)
+
+  (* which is not only monoidal *)
+   ; fc_mf_J    : MonoidalFunctor C (CenterMonoidal K) fc_J
+
+  (* but in fact strict (meaning the functor's coherence maps are identities) *)
+   ; fc_strict  : forall a, iso_forward (mf_coherence fc_mf_J a) ~~ id _
+
+   ; fc_C       := C
+   ; fc_K       := K
+   }.
+
+Coercion fc_mf_J   : FreydCategory >-> MonoidalFunctor.
+Coercion fc_K      : FreydCategory >-> PreMonoidalCat.
+
