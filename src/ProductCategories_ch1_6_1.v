@@ -126,6 +126,12 @@ Section ProductCategoryFunctors.
               case g as [ [g11 g12] g2];
               intros; reflexivity).
     Defined.
+  Definition func_diagonal : Functor C (C ×× C) (fun c => (pair_obj c c)).
+    refine {| fmor := fun a b f => @pair_mor _ _ C _ _ C (pair_obj a a) (pair_obj b b) f f |}.
+    abstract (intros; simpl; repeat split; simpl; auto).
+    abstract (intros; simpl; repeat split; simpl; auto).
+    abstract (intros; simpl; repeat split; simpl; auto).
+    Defined.
 End ProductCategoryFunctors.
 
 Section func_prod.

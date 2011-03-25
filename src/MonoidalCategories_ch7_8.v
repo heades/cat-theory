@@ -363,11 +363,10 @@ End MonoidalCat_is_PreMonoidal.
 
 Hint Extern 1 => apply MonoidalCat_all_central.
 Coercion MonoidalCat_is_PreMonoidal : MonoidalCat >-> PreMonoidalCat.
-(*Lemma CommutativePreMonoidalCategoriesAreMonoidal `(pm:PreMonoidalCat)(cc:CommutativeCat pm) : MonoidalCat pm.*)
 
 (* Later: generalized to premonoidal categories *)
 Class DiagonalCat `(mc:MonoidalCat(F:=F)) :=
-{  copy_nt      :  forall a, functor_id _ ~~~> func_rlecnac a >>>> F
+{  copy_nt      :  forall a, functor_id _ ~~~> func_diagonal >>>> F
 ;  copy         :  forall (a:mc),   a~~{mc}~~>(bin_obj(BinoidalCat:=mc) a a)
                 := fun a => nt_component _ _ (copy_nt a) a
 (* for non-cartesian braided diagonal categories we also need: copy >> swap == copy *)
