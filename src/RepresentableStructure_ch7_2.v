@@ -179,8 +179,8 @@ Coercion smme_me : SurjectiveMonicMonoidalEnrichment >-> MonicMonoidalEnrichment
 Structure SMME :=
 { smme_e   : Enrichment
 ; smme_mon : MonoidalEnrichment smme_e
-; smme_me  : MonicMonoidalEnrichment smme_mon
+; smme_mee : MonicMonoidalEnrichment _ smme_mon
 }.
 Coercion smme_e   : SMME >-> Enrichment.
-Coercion smme_mon : SMME >-> MonoidalEnrichment smme_e.
-Coercion smme_me  : SMME >-> MonicMonoidalEnrichment smme_mon.
+Coercion smme_mon : SMME >-> MonoidalEnrichment.
+Coercion smme_mee : SMME >-> MonicMonoidalEnrichment.
