@@ -374,14 +374,14 @@ Structure Enrichment :=
 Coercion enr_c     : Enrichment >-> ECategory.
 
 (* an enrichment for which every object of the enriching category is the tensor of finitely many hom-objects *)
-Structure SurjectiveEnrichment :=
-{ se_enr    :  Enrichment
-; se_decomp :  @treeDecomposition (enr_v se_enr) (option ((enr_c_obj se_enr)*(enr_c_obj se_enr)))
+Structure SurjectiveEnrichment (e:Enrichment) :=
+{ se_enr    := e
+; se_decomp :  @treeDecomposition (enr_v e) (option ((enr_c_obj e)*(enr_c_obj e)))
                   (fun t => match t with
-                            | None   => enr_v_i se_enr
-                            | Some x => match x with pair y z => enr_c_hom se_enr y z end
+                            | None   => enr_v_i e
+                            | Some x => match x with pair y z => enr_c_hom e y z end
                             end)
-                  (fun d1 d2:enr_v se_enr => enr_v_fobj se_enr (pair_obj d1 d2))
+                  (fun d1 d2:enr_v e => enr_v_fobj e (pair_obj d1 d2))
 }.
 Coercion se_enr  : SurjectiveEnrichment >-> Enrichment.
 

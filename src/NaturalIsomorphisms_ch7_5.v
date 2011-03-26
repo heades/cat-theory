@@ -251,3 +251,13 @@ Section ni_prod_comp.
     split; reflexivity.
     Defined.
 End ni_prod_comp.
+
+Structure Retraction `{C:Category} `{D:Category} :=
+{ retraction_section_fobj       : C -> D
+; retraction_section            : Functor C D retraction_section_fobj
+; retraction_retraction_fobj    : D -> C
+; retraction_retraction         : Functor D C retraction_retraction_fobj
+; retraction_composes           : retraction_section >>>> retraction_retraction ≃ functor_id _
+}.
+Implicit Arguments Retraction [ [Ob] [Hom] [Ob0] [Hom0] ].
+Coercion retraction_section : Retraction >-> Functor.

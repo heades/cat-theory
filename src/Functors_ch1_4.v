@@ -103,12 +103,10 @@ Definition EqualFunctors `{C1:Category}`{C2:Category}{F1obj}(F1:Functor C1 C2 F1
   forall a b (f f':a~~{C1}~~>b), f~~f' -> heq_morphisms (F1 \ f) (F2 \ f').
 Notation "f ~~~~ g" := (EqualFunctors f g) (at level 45).
 
-(*
 Class IsomorphicCategories `(C:Category)`(D:Category){Fobj}{Gobj}(F:Functor C D Fobj)(G:Functor D C Gobj) :=
 { ic_forward  : F >>>> G ~~~~ functor_id C
 ; ic_backward : G >>>> F ~~~~ functor_id D
 }.
-*)
 
 (* this causes Coq to die: *)
 (* Definition IsomorphicCategories := Isomorphic (CategoryOfCategories). *)

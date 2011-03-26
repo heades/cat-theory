@@ -140,23 +140,47 @@ Section RepresentableStructure.
 End RepresentableStructure.
 Opaque RepresentableFunctor.
 
-Structure MonoidalEnrichment :=
-{ me_enr         : Enrichment
-; me_fobj        : prod_obj me_enr me_enr -> me_enr
-; me_f           : Functor (me_enr ×× me_enr) me_enr me_fobj
-; me_i           : me_enr
-; me_mon         : MonoidalCat me_enr me_fobj me_f me_i
-; me_mf          : MonoidalFunctor me_mon (enr_v_mon me_enr) (RepresentableFunctor me_enr me_i)
+Structure MonoidalEnrichment {e:Enrichment} :=
+{ me_enr         :=e
+; me_fobj        : prod_obj e e -> e
+; me_f           : Functor (e ×× e) e me_fobj
+; me_i           : e
+; me_mon         : MonoidalCat e me_fobj me_f me_i
+; me_mf          : MonoidalFunctor me_mon (enr_v_mon e) (RepresentableFunctor e me_i)
 }.
+Implicit Arguments MonoidalEnrichment [ ].
 Coercion me_mon : MonoidalEnrichment >-> MonoidalCat.
 Coercion me_enr : MonoidalEnrichment >-> Enrichment.
 
 (* an enrichment for which hom(I,-) is monoidal, full, faithful, and conservative *)
-Structure MonicMonoidalEnrichment :=
-{ ffme_enr             : MonoidalEnrichment
-; ffme_mf_full         : FullFunctor         (RepresentableFunctor ffme_enr (me_i ffme_enr))
-; ffme_mf_faithful     : FaithfulFunctor     (RepresentableFunctor ffme_enr (me_i ffme_enr))
-; ffme_mf_conservative : ConservativeFunctor (RepresentableFunctor ffme_enr (me_i ffme_enr))
+Structure MonicMonoidalEnrichment {e}{me:MonoidalEnrichment e} :=
+{ ffme_enr             := me
+; ffme_mf_full         : FullFunctor         (RepresentableFunctor e (me_i me))
+; ffme_mf_faithful     : FaithfulFunctor     (RepresentableFunctor e (me_i me))
+; ffme_mf_conservative : ConservativeFunctor (RepresentableFunctor e (me_i me))
 }.
+Implicit Arguments MonicMonoidalEnrichment [ ].
 Coercion ffme_enr : MonicMonoidalEnrichment >-> MonoidalEnrichment.
 Transparent RepresentableFunctor.
+
+Lemma CartesianEnrMonoidal (e:Enrichment) `(C:CartesianCat(Ob:= _)(Hom:= _)(C:=Underlying (enr_c e))) : MonoidalEnrichment e.
+  admit.
+  Defined.
+
+Structure SurjectiveMonicMonoidalEnrichment (e:Enrichment) :=
+{ smme_se       : SurjectiveEnrichment e
+; smme_monoidal : MonoidalEnrichment e
+; smme_me       : MonicMonoidalEnrichment _ smme_monoidal
+}.
+Coercion smme_se : SurjectiveMonicMonoidalEnrichment >-> SurjectiveEnrichment.
+Coercion smme_me : SurjectiveMonicMonoidalEnrichment >-> MonicMonoidalEnrichment.
+
+(* like SurjectiveMonicMonoidalEnrichment, but the Enrichment is a field, not a parameter *)
+Structure SMME :=
+{ smme_e   : Enrichment
+; smme_mon : MonoidalEnrichment smme_e
+; smme_me  : MonicMonoidalEnrichment smme_mon
+}.
+Coercion smme_e   : SMME >-> Enrichment.
+Coercion smme_mon : SMME >-> MonoidalEnrichment smme_e.
+Coercion smme_me  : SMME >-> MonicMonoidalEnrichment smme_mon.
