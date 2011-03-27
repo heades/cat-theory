@@ -436,7 +436,10 @@ Section MonoidalFunctorsCompose.
   { mf_id        := id_comp         (mf_id mf2) (functors_preserve_isos f2 (mf_id mf1))
   ; mf_coherence := mf_compose_coherence
   }.
-  Admitted.
+  admit.
+  admit.
+  admit.
+  Defined.
 
 End MonoidalFunctorsCompose.
 
