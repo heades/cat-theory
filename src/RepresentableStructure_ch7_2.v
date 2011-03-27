@@ -178,9 +178,11 @@ Coercion smme_me : SurjectiveMonicMonoidalEnrichment >-> MonicMonoidalEnrichment
 (* like SurjectiveMonicMonoidalEnrichment, but the Enrichment is a field, not a parameter *)
 Structure SMME :=
 { smme_e   : Enrichment
+; smme_see : SurjectiveEnrichment smme_e
 ; smme_mon : MonoidalEnrichment smme_e
 ; smme_mee : MonicMonoidalEnrichment _ smme_mon
 }.
 Coercion smme_e   : SMME >-> Enrichment.
+Coercion smme_see : SMME >-> SurjectiveEnrichment.
 Coercion smme_mon : SMME >-> MonoidalEnrichment.
 Coercion smme_mee : SMME >-> MonicMonoidalEnrichment.
