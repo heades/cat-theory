@@ -430,7 +430,7 @@ Section MonoidalFunctorsCompose.
         apply ni_inv.
         apply mc1.
         apply ni_id.
-    Qed.
+  Defined.
 
   Instance MonoidalFunctorsCompose : MonoidalFunctor m1 m3 (f1 >>>> f2) :=
   { mf_id        := id_comp         (mf_id mf2) (functors_preserve_isos f2 (mf_id mf1))
