@@ -106,6 +106,7 @@ Section RepresentableStructure.
       apply hom_covariant_distributes.
       Defined.
 
+  (*
   Lemma undo_homfunctor `(f:a~~{ec}~~>b) : f ~~ eid _ >>> (HomFunctor a \ f).
     simpl.
     setoid_rewrite <- associativity.
@@ -143,7 +144,7 @@ Section RepresentableStructure.
     set (@eqv_equivalence) as qmt.
     apply qmt.
     Qed.
-
+    *)
 
 End RepresentableStructure.
 Opaque HomFunctor.
