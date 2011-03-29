@@ -35,7 +35,7 @@ Require Import Adjoints_ch9.
 (*Require Import CoqCategory.*)
 (*Require Import NaturalDeduction.*)
 (*Require Import NaturalDeductionCategories.*)
-(*Require Import CartesianEnrichmentsHaveMonoidalRepresentableFunctors.*)
+(*Require Import CartesianEnrichmentsHaveMonoidalHomFunctors.*)
 (*Require Import Reification.*)
 (*Require Import GeneralizedArrow.*)
 (*Require Import ReificationFromGArrow.*)

@@ -3,5 +3,5 @@
 (*******************************************************************************)
 
   (*
-  Lemma YonedaLemma : forall (A B:ec), (CategoryOfNaturalTransformations (RepresentableFunctor A) (RepresentableFunctor B)) ≅ (B~~>A)
+  Lemma YonedaLemma : forall (A B:ec), (CategoryOfNaturalTransformations (HomFunctor A) (HomFunctor B)) ≅ (B~~>A)
   *)

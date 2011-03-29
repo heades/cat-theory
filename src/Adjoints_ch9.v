@@ -26,8 +26,8 @@ Notation "'η'"    := (adj_unit _).
 (*
 Lemma homset_adjunction `(C:ECategory(V:=V))`(D:ECategory(V:=V))(L:Func C D)(R:Func D C)
  :  (L -| R)
- -> RepresentableFunctorºᑭ _ _ >>>> YonedaBiFunctor D ≃
-    RepresentableFunctorºᑭ _ _ >>>> YonedaBiFunctor C.
+ -> HomFunctorºᑭ _ _ >>>> YonedaBiFunctor D ≃
+    HomFunctorºᑭ _ _ >>>> YonedaBiFunctor C.
   *)
   (* adjuncts are unique up to natural iso *)
   (* adjuncts compose *)

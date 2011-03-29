@@ -7,6 +7,7 @@ Require Import Preamble.
 Require Import Categories_ch1_3.
 Require Import Functors_ch1_4.
 Require Import Isomorphisms_ch1_5.
+Require Import EpicMonic_ch2_1.
 Require Import ProductCategories_ch1_6_1.
 Require Import OppositeCategories_ch1_6_2.
 Require Import Enrichment_ch2_8.
@@ -15,8 +16,6 @@ Require Import NaturalTransformations_ch7_4.
 Require Import NaturalIsomorphisms_ch7_5.
 Require Import MonoidalCategories_ch7_8.
 Require Import Coherence_ch7_8.
-
-(* FIXME: an object is a Generator if its covariant representable functor is faithful *)
 
 Section RepresentableStructure.
   Context `(ec:ECategory(mn:=mn)(V:=V)).
@@ -35,24 +34,13 @@ Section RepresentableStructure.
      apply qq.
      Qed.
 
-  Lemma hom_contravariant_distributes {a b c:ec}{x}(f:a~~{ec}~~>b)(g:b~~{ec}~~>c)
-     : hom_contravariant (f >>> g) ~~ (hom_contravariant g) >>> (hom_contravariant (a:=x) f).
-     set (f >>> g) as fg; simpl in fg; unfold fg; clear fg.
-     unfold hom_contravariant.
-     repeat setoid_rewrite associativity.
-     etransitivity; [ idtac | symmetry; apply associativity ].
-     apply comp_respects; try reflexivity.
-     set (@ecomp_is_functorial _ _ _ _ _ _ _ _ _ _ _ _ _ x f g) as qq.
-     setoid_rewrite juggle2 in qq.
-     admit.
-     Qed.
-
+  (*
   Lemma hom_swap {a b c d:ec}(f:a~~{ec}~~>b)(g:c~~{ec}~~>d)
      : hom_covariant f >>> hom_contravariant g ~~ hom_contravariant g >>> hom_covariant f.
      etransitivity.
      unfold hom_covariant.
      unfold hom_contravariant.
-     Admitted.
+     Defined.     
 
   Definition YonedaBiFunctor_fmor (a b:ec⁽ºᑭ⁾ ×× ec)(f:a~~{ec⁽ºᑭ⁾ ×× ec}~~>b)
         : ((fst_obj _ _ a)~~>(snd_obj _ _ a))~~{V}~~>((fst_obj _ _ b)~~>(snd_obj _ _ b)).
@@ -94,11 +82,31 @@ Section RepresentableStructure.
               reflexivity).
     Defined.
 
-  Definition RepresentableFunctorºᑭ (X:ec) : Functor ec⁽ºᑭ⁾ V (fun a => a~~>X) := func_rlecnac X >>>> YonedaBiFunctor.
-  Definition RepresentableFunctor   (X:ec) : Functor ec     V (fun a => X~~>a) :=
-    func_llecnac(C:=ec⁽ºᑭ⁾)(D:=ec) X >>>> YonedaBiFunctor.
-  
-  Lemma undo_homfunctor `(f:a~~{ec}~~>b) : f ~~ eid _ >>> (RepresentableFunctor a \ f).
+  Definition HomFunctorºᑭ (X:ec) : Functor ec⁽ºᑭ⁾ V (fun a => a~~>X) := func_rlecnac X >>>> YonedaBiFunctor.
+  *)
+
+  Definition HomFunctor   (X:ec) : Functor ec     V (ehom X).
+    refine {| fmor := @hom_covariant X |}.
+    intros.
+      unfold hom_covariant.
+      apply comp_respects; try reflexivity.
+      apply comp_respects; try reflexivity.
+      apply fmor_respects; auto.
+    intros.
+      unfold hom_covariant.
+      apply (epic _ (iso_epic ((pmon_cancelr mn) (X ~~> a)))).
+      setoid_rewrite <- associativity.
+      setoid_rewrite <- associativity.
+      setoid_rewrite iso_comp1.
+      setoid_rewrite left_identity.
+      setoid_rewrite right_identity.
+      apply (@eright_identity).
+    intros.
+      symmetry.
+      apply hom_covariant_distributes.
+      Defined.
+
+  Lemma undo_homfunctor `(f:a~~{ec}~~>b) : f ~~ eid _ >>> (HomFunctor a \ f).
     simpl.
     setoid_rewrite <- associativity.
     unfold hom_contravariant.
@@ -138,7 +146,7 @@ Section RepresentableStructure.
 
 
 End RepresentableStructure.
-Opaque RepresentableFunctor.
+Opaque HomFunctor.
 
 Structure MonoidalEnrichment {e:Enrichment} :=
 { me_enr         :=e
@@ -146,7 +154,7 @@ Structure MonoidalEnrichment {e:Enrichment} :=
 ; me_f           : Functor (e ×× e) e me_fobj
 ; me_i           : e
 ; me_mon         : MonoidalCat e me_fobj me_f me_i
-; me_mf          : MonoidalFunctor me_mon (enr_v_mon e) (RepresentableFunctor e me_i)
+; me_mf          : MonoidalFunctor me_mon (enr_v_mon e) (HomFunctor e me_i)
 }.
 Implicit Arguments MonoidalEnrichment [ ].
 Coercion me_mon : MonoidalEnrichment >-> MonoidalCat.
@@ -155,17 +163,13 @@ Coercion me_enr : MonoidalEnrichment >-> Enrichment.
 (* an enrichment for which hom(I,-) is monoidal, full, faithful, and conservative *)
 Structure MonicMonoidalEnrichment {e}{me:MonoidalEnrichment e} :=
 { ffme_enr             := me
-; ffme_mf_full         : FullFunctor         (RepresentableFunctor e (me_i me))
-; ffme_mf_faithful     : FaithfulFunctor     (RepresentableFunctor e (me_i me))
-; ffme_mf_conservative : ConservativeFunctor (RepresentableFunctor e (me_i me))
+; ffme_mf_full         : FullFunctor         (HomFunctor e (me_i me))
+; ffme_mf_faithful     : FaithfulFunctor     (HomFunctor e (me_i me))
+; ffme_mf_conservative : ConservativeFunctor (HomFunctor e (me_i me))
 }.
 Implicit Arguments MonicMonoidalEnrichment [ ].
 Coercion ffme_enr : MonicMonoidalEnrichment >-> MonoidalEnrichment.
-Transparent RepresentableFunctor.
-
-Lemma CartesianEnrMonoidal (e:Enrichment) `(C:CartesianCat(Ob:= _)(Hom:= _)(C:=Underlying (enr_c e))) : MonoidalEnrichment e.
-  admit.
-  Defined.
+Transparent HomFunctor.
 
 Structure SurjectiveMonicMonoidalEnrichment (e:Enrichment) :=
 { smme_se       : SurjectiveEnrichment e
