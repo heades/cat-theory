@@ -179,7 +179,10 @@ Definition EssentiallySurjectiveOnObjects `(F:Functor(c1:=C1)(c2:=C2)(fobj:=Fobj
 
 (* Definition 7.1: (essentially) injective on objects *)
 Class ConservativeFunctor `(F:Functor(c1:=C1)(c2:=C2)(fobj:=Fobj)) :=
-  { cf_reflect_iso : forall (a b:C1),  (F a) ≅ (F b) -> a ≅ b }.
+  { cf_reflect_iso  : forall (a b:C1),  (F a) ≅ (F b) -> a ≅ b
+  ; cf_reflect_iso1 : forall a b (i:(F a) ≅ (F b)), F \ #(cf_reflect_iso a b i) ~~ #i
+  ; cf_reflect_iso2 : forall a b (i:(F a) ≅ (F b)), F \ #(cf_reflect_iso a b i)⁻¹ ~~ #i⁻¹
+  }.
 
 (* "monic up to natural iso" *)
 Definition WeaklyMonic
@@ -333,8 +336,92 @@ Section FullFaithfulFunctor_section.
     symmetry; auto.
     Qed.
 
+  Definition ff_functor_section_splits_niso_helper' a
+    : ((RestrictToImage F >>>> ff_functor_section_functor) a ≅ (functor_id _) a).
+    intros; simpl.
+    unfold functor_fobj.
+    unfold ff_functor_section_fobj.
+    unfold RestrictToImage_fobj.
+    simpl.
+    apply iso_id.
+    Defined.
+
+  Lemma ff_functor_section_splits_niso' : (RestrictToImage F >>>> ff_functor_section_functor) ≃ functor_id _.
+    intros; simpl.
+    exists ff_functor_section_splits_niso_helper'.
+    intros.
+    simpl in *.
+    setoid_rewrite left_identity.
+    setoid_rewrite right_identity.
+    set (F_full _ _ (F \ f)) as qr.
+    destruct qr.
+    apply F_faithful in e.
+    symmetry.
+    auto.
+    Qed.
+
+  Context (CF:ConservativeFunctor F).
+
+  Lemma if_fullimage `{C0:Category}{Aobj}{Bobj}{A:Functor C0 C1 Aobj}{B:Functor C0 C1 Bobj} :
+    A >>>> F ≃ B >>>> F ->
+    A >>>> RestrictToImage F ≃ B >>>> RestrictToImage F.
+    intro H.
+    destruct H.
+    unfold IsomorphicFunctors.
+    set (fun A  => functors_preserve_isos (RestrictToImage F) (cf_reflect_iso _ _ (x A))).
+    exists i.
+    intros.
+    unfold RestrictToImage.
+    unfold functor_comp.
+    simpl.
+    unfold functor_comp in H.
+    simpl in H.
+    rewrite (cf_reflect_iso1(ConservativeFunctor:=CF) _ _ (x A0)).
+    rewrite (cf_reflect_iso1(ConservativeFunctor:=CF) _ _ (x B0)).
+    apply H.
+    Qed.
+
   Lemma ffc_functor_weakly_monic : ConservativeFunctor F -> WeaklyMonic F.
-    admit.
+    intro H.
+    unfold WeaklyMonic; intros.
+    apply (if_comp(F2:=G>>>>functor_id _)).
+    apply if_inv.
+    apply if_right_identity.
+    apply if_inv.
+    apply (if_comp(F2:=H0>>>>functor_id _)).
+    apply if_inv.
+    apply if_right_identity.
+    eapply if_inv.
+    apply (if_comp(F2:=G>>>>(RestrictToImage F >>>> ff_functor_section_functor))).
+    apply (@if_respects _ _ _ _ _ _ _ _ _ _ G _ G _ (functor_id C1) _ (RestrictToImage F >>>> ff_functor_section_functor)).
+    apply if_id.
+    apply if_inv.
+    apply ff_functor_section_splits_niso'.
+    apply if_inv.
+    apply (if_comp(F2:=H0>>>>(RestrictToImage F >>>> ff_functor_section_functor))).
+    apply (@if_respects _ _ _ _ _ _ _ _ _ _ H0 _ H0 _ (functor_id C1) _ (RestrictToImage F >>>> ff_functor_section_functor)).
+    apply if_id.
+    apply if_inv.
+    apply ff_functor_section_splits_niso'.
+    assert
+      ((H0 >>>> (RestrictToImage F >>>> ff_functor_section_functor))
+        ≃ ((H0 >>>> RestrictToImage F) >>>> ff_functor_section_functor)).
+    apply if_inv.
+    apply if_associativity.
+    apply (if_comp H2).
+    clear H2.
+    apply if_inv.
+    assert
+      ((G >>>> (RestrictToImage F >>>> ff_functor_section_functor))
+        ≃ ((G >>>> RestrictToImage F) >>>> ff_functor_section_functor)).
+    apply if_inv.
+    apply if_associativity.
+    apply (if_comp H2).
+    clear H2.
+    apply if_respects.
+    apply if_fullimage.
+    apply H1.
+    apply if_id.
     Qed.
 
   Opaque ff_functor_section_splits_niso_helper.
