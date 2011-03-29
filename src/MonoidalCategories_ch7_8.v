@@ -34,15 +34,10 @@ Class CentralMorphism `{BinoidalCat}`(f:a~>b) : Prop :=
 ; centralmor_second : forall `(g:c~>d), (g ⋉ _ >>> _ ⋊ f) ~~ (_ ⋊ f >>> g ⋉ _)
 }.
 
-(* the central morphisms of a category constitute a subcategory *)
-Definition Center `(bc:BinoidalCat) : SubCategory bc (fun _ => True) (fun _ _ _ _ f => CentralMorphism f).
-  apply Build_SubCategory; intros; apply Build_CentralMorphism; intros.
-  abstract (setoid_rewrite (fmor_preserves_id(bin_first c));
-              setoid_rewrite (fmor_preserves_id(bin_first d));
-              setoid_rewrite left_identity; setoid_rewrite right_identity; reflexivity).
-  abstract (setoid_rewrite (fmor_preserves_id(bin_second c));
-              setoid_rewrite (fmor_preserves_id(bin_second d));
-              setoid_rewrite left_identity; setoid_rewrite right_identity; reflexivity).
+Lemma central_morphisms_compose `{bc:BinoidalCat}{a b c}(f:a~>b)(g:b~>c)
+  : CentralMorphism f -> CentralMorphism g -> CentralMorphism (f >>> g).
+  intros.
+  apply Build_CentralMorphism; intros.
   abstract (setoid_rewrite <- (fmor_preserves_comp(bin_first c0));
               setoid_rewrite associativity;
               setoid_rewrite centralmor_first;
@@ -59,6 +54,19 @@ Definition Center `(bc:BinoidalCat) : SubCategory bc (fun _ => True) (fun _ _ _ 
               setoid_rewrite <- associativity;
               setoid_rewrite <- (fmor_preserves_comp(bin_second c0));
               reflexivity).
+  Qed.
+
+(* the central morphisms of a category constitute a subcategory *)
+Definition Center `(bc:BinoidalCat) : SubCategory bc (fun _ => True) (fun _ _ _ _ f => CentralMorphism f).
+  apply Build_SubCategory; intros.
+  apply Build_CentralMorphism; intros.
+  abstract (setoid_rewrite (fmor_preserves_id(bin_first c));
+              setoid_rewrite (fmor_preserves_id(bin_first d));
+              setoid_rewrite left_identity; setoid_rewrite right_identity; reflexivity).
+  abstract (setoid_rewrite (fmor_preserves_id(bin_second c));
+              setoid_rewrite (fmor_preserves_id(bin_second d));
+              setoid_rewrite left_identity; setoid_rewrite right_identity; reflexivity).
+  apply central_morphisms_compose; auto.
   Qed.
 
 Class CommutativeCat `(BinoidalCat) :=
@@ -159,7 +167,6 @@ Lemma MacLane_ex_VII_1_1 `{mn:PreMonoidalCat(I:=EI)} a b
   (* FIXME *)
   Admitted.
 
-(* Formalized Definition 3.10 *)
 Class PreMonoidalFunctor
 `(PM1:PreMonoidalCat(C:=C1)(I:=I1))
 `(PM2:PreMonoidalCat(C:=C2)(I:=I2))
@@ -364,7 +371,7 @@ End MonoidalCat_is_PreMonoidal.
 Hint Extern 1 => apply MonoidalCat_all_central.
 Coercion MonoidalCat_is_PreMonoidal : MonoidalCat >-> PreMonoidalCat.
 
-(* Later: generalized to premonoidal categories *)
+(* Later: generalize to premonoidal categories *)
 Class DiagonalCat `(mc:MonoidalCat(F:=F)) :=
 {  copy_nt      :  forall a, functor_id _ ~~~> func_diagonal >>>> F
 ;  copy         :  forall (a:mc),   a~~{mc}~~>(bin_obj(BinoidalCat:=mc) a a)
@@ -467,8 +474,52 @@ Section CenterMonoidal.
     exists (a ⊗ b); auto.
     Defined.
 
-  Definition CenterMonoidal_F : Functor _ _ CenterMonoidal_Fobj.
+  Definition CenterMonoidal_F_fmor (a b:(Center mc) ×× (Center mc)) : 
+    (a~~{(Center mc) ×× (Center mc)}~~>b) ->
+    ((CenterMonoidal_Fobj a)~~{Center mc}~~>(CenterMonoidal_Fobj b)).
+    destruct a as [[a1 a1'] [a2 a2']].
+    destruct b as [[b1 b1'] [b2 b2']].
+    intro f.
+    destruct f as [[f1 f1'] [f2 f2']].
+    simpl in *.
+    unfold hom.
+    simpl.
+    exists (f1 ⋉ a2 >>> b1 ⋊ f2).
+    apply central_morphisms_compose.
     admit.
+    admit.
+    Defined.
+
+  Definition CenterMonoidal_F : Functor _ _ CenterMonoidal_Fobj.
+    refine {| fmor := CenterMonoidal_F_fmor |}.
+    intros.
+    destruct a as [[a1 a1'] [a2 a2']].
+    destruct b as [[b1 b1'] [b2 b2']].
+    destruct f as [[f1 f1'] [f2 f2']].
+    destruct f' as [[g1 g1'] [g2 g2']].
+    simpl in *.
+    destruct H.
+    apply comp_respects.
+    set (fmor_respects(-⋉a2)) as q; apply q; auto.
+    set (fmor_respects(b1⋊-)) as q; apply q; auto.
+    intros.
+    destruct a as [[a1 a1'] [a2 a2']].
+    simpl in *.
+    setoid_rewrite (fmor_preserves_id (-⋉a2)).
+    setoid_rewrite (fmor_preserves_id (a1⋊-)).
+    apply left_identity.
+    intros.
+    destruct a as [[a1 a1'] [a2 a2']].
+    destruct b as [[b1 b1'] [b2 b2']].
+    destruct c as [[c1 c1'] [c2 c2']].
+    destruct f as [[f1 f1'] [f2 f2']].
+    destruct g as [[g1 g1'] [g2 g2']].
+    simpl in *.
+    setoid_rewrite juggle3.
+    setoid_rewrite <- (centralmor_first(CentralMorphism:=g1')).
+    setoid_rewrite <- juggle3.
+    setoid_rewrite <- fmor_preserves_comp.
+    reflexivity.
     Defined.
 
   Definition CenterMonoidal  : MonoidalCat _ _ CenterMonoidal_F (exist _ pI I).
