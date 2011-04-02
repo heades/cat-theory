@@ -102,3 +102,19 @@ Lemma iso_shift_left' `{C:Category} : forall {a b c:C}(f:a~>b)(g:a~>c)(i:Isomorp
   symmetry.
   apply right_identity.
   Qed.  
+
+Lemma isos_forward_equal_then_backward_equal `{C:Category}{a}{b}(i1 i2:a ≅ b) : #i1 ~~ #i2 ->  #i1⁻¹ ~~ #i2⁻¹.
+  intro H.
+  setoid_rewrite <- left_identity at 1.
+  setoid_rewrite <- (iso_comp2 i2).
+  setoid_rewrite associativity.
+  setoid_rewrite <- H.
+  setoid_rewrite iso_comp1.
+  setoid_rewrite right_identity.
+  reflexivity.
+  Qed.
+
+Lemma iso_inv_inv `{C:Category}{a}{b}(i:a ≅ b) : #(i⁻¹)⁻¹ ~~ #i.
+  unfold iso_inv; simpl.
+  reflexivity.
+  Qed.
