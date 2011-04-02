@@ -16,6 +16,9 @@ Require Import NaturalTransformations_ch7_4.
 Require Import NaturalIsomorphisms_ch7_5.
 Require Import MonoidalCategories_ch7_8.
 Require Import Coherence_ch7_8.
+Require Import BinoidalCategories.
+Require Import PreMonoidalCategories.
+Require Import MonoidalCategories_ch7_8.
 
 Section RepresentableStructure.
   Context `(ec:ECategory(mn:=mn)(V:=V)).
