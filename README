@@ -1,0 +1,24 @@
+------------------------------------------------------------------------------
+Category Theory Library for Coq (coq-categories)
+Adam Megacz <megacz@acm.org>
+
+
+One of the difficulties with putting together a formalization of
+category theory is deciding how to organize it.  For example: should
+the formalization of exponential objects be grouped with the
+formalization of adjunctions or the formalization of monoidal
+categories?
+
+I took the easy route and imitated the structure of Awodey's book
+__Category Theory__.  If you're looking for a concept (like
+exponential objects), find it in his book first, then look in the file
+witht he corresponding chapter number.
+
+IMPORTANT NOTE ABOUT BIFUNCTORS: I've come across this really hideous
+performance bug in Coq which seems to be triggered whenever you start
+using functors whose domain or codomain is the product of two
+categories (i.e., product object in __Cat__).  Nobody on coq-club
+seems to know what's going on, and several different representations
+all trigger the bug.  Therefore, I have -- unfortunately -- chosen
+definitions which avoid product categories and bifunctors wherever
+possible.
