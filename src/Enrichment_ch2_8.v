@@ -26,16 +26,16 @@ Class ECategory `(mn:PreMonoidalCat(bc:=bc)(C:=V)(I:=EI))(Eob:Type)(Ehom:Eob->Eo
 ; eid_central        :   forall a,          CentralMorphism (eid a)
 ; ecomp              :   forall {a b c},    (a~~>b)⊗(b~~>c) ~> (a~~>c)
 ; ecomp_central      :>  forall {a b c},    CentralMorphism (@ecomp a b c)
-; eleft_identity     :   forall {a b  },    eid a ⋉ (a~~>b) >>> ecomp ~~ #(pmon_cancell _ _)
-; eright_identity    :   forall {a b  },    (a~~>b) ⋊ eid b >>> ecomp ~~ #(pmon_cancelr _ _)
-; eassociativity     :   forall {a b c d},  #(pmon_assoc _ _ _ (_~~>_))⁻¹ >>> ecomp ⋉ (c~~>d) >>> ecomp ~~ (a~~>b) ⋊ ecomp >>> ecomp
+; eleft_identity     :   forall {a b  },    eid a ⋉ (a~~>b) >>> ecomp ~~ #(pmon_cancell _)
+; eright_identity    :   forall {a b  },    (a~~>b) ⋊ eid b >>> ecomp ~~ #(pmon_cancelr _)
+; eassociativity     :   forall {a b c d},  #(pmon_assoc _ _ (_~~>_))⁻¹ >>> ecomp ⋉ (c~~>d) >>> ecomp ~~ (a~~>b) ⋊ ecomp >>> ecomp
 }.
 Notation "a ~~> b" := (@ehom _ _ _ _ _ _ _ _ _ _ a b) : category_scope.
 Coercion eob_eob : ECategory >-> Sortclass.
 
 Lemma ecomp_is_functorial `{ec:ECategory}{a b c}{x}(f:EI~~{V}~~>(a~~>b))(g:EI~~{V}~~>(b~~>c)) :
-   ((x ~~> a) ⋊-) \ (iso_backward ((pmon_cancelr mn) EI) >>> ((- ⋉EI) \ f >>> (((a ~~> b) ⋊-) \ g >>> ecomp))) >>> ecomp ~~
-   ((x ~~> a) ⋊-) \ f >>> (ecomp >>> (#((pmon_cancelr mn) (x ~~> b)) ⁻¹ >>> (((x ~~> b) ⋊-) \ g >>> ecomp))).
+   ((x ~~> a) ⋊-) \ (iso_backward (pmon_cancelr EI) >>> ((- ⋉EI) \ f >>> (((a ~~> b) ⋊-) \ g >>> ecomp))) >>> ecomp ~~
+   ((x ~~> a) ⋊-) \ f >>> (ecomp >>> (#(pmon_cancelr (x ~~> b)) ⁻¹ >>> (((x ~~> b) ⋊-) \ g >>> ecomp))).
 
    set (@fmor_preserves_comp) as fmor_preserves_comp'.
 
@@ -59,8 +59,8 @@ Lemma ecomp_is_functorial `{ec:ECategory}{a b c}{x}(f:EI~~{V}~~>(a~~>b))(g:EI~~{
    assert (forall {a b c x}(g:EI~~{V}~~>(b ~~> c)),
     ((bin_second(BinoidalCat:=bc) (x ~~> a)) \ ((bin_second(BinoidalCat:=bc) (a ~~> b)) \ g))
     ~~
-    (#(pmon_assoc mn (x ~~> a) _ _)⁻¹ >>>
-     (bin_second(BinoidalCat:=bc) ((x ~~> a) ⊗ (a ~~> b))) \ g >>> #(pmon_assoc mn (x ~~> a) _ _))).
+    (#(pmon_assoc (x ~~> a) _ _)⁻¹ >>>
+     (bin_second(BinoidalCat:=bc) ((x ~~> a) ⊗ (a ~~> b))) \ g >>> #(pmon_assoc (x ~~> a) _ _))).
     symmetry.
 
     setoid_rewrite associativity.
@@ -119,8 +119,8 @@ Lemma ecomp_is_functorial `{ec:ECategory}{a b c}{x}(f:EI~~{V}~~>(a~~>b))(g:EI~~{
    (* and knock off the trailing ecomp *)
    apply comp_respects; try reflexivity.
 
-   setoid_replace (iso_backward ((pmon_cancelr mn) ((x ~~> a) ⊗ (a ~~> b)))) with
-     (iso_backward ((pmon_cancelr mn) ((x ~~> a) ⊗ (a ~~> b))) >>> id _).
+   setoid_replace (iso_backward ((pmon_cancelr) ((x ~~> a) ⊗ (a ~~> b)))) with
+     (iso_backward ((pmon_cancelr) ((x ~~> a) ⊗ (a ~~> b))) >>> id _).
    simpl.
    set (@iso_shift_right') as ibs.
    simpl in ibs.
@@ -147,8 +147,8 @@ Lemma ecomp_is_functorial `{ec:ECategory}{a b c}{x}(f:EI~~{V}~~>(a~~>b))(g:EI~~{
 Lemma underlying_associativity `{ec:ECategory(mn:=mn)(EI:=EI)(Eob:=Eob)(Ehom:=Ehom)} :
    forall {a b : Eob} (f : EI ~~{ V }~~> a ~~> b) {c : Eob}
    (g : EI ~~{ V }~~> b ~~> c) {d : Eob} (h : EI ~~{ V }~~> c ~~> d),
-   ((((#((pmon_cancelr mn) EI) ⁻¹ >>> (f ⋉ EI >>> (a ~~> b) ⋊ g)) >>> ecomp) ⋉ EI >>> (a ~~> c) ⋊ h)) >>> ecomp ~~
-   ((f ⋉ EI >>> (a ~~> b) ⋊ ((#((pmon_cancelr mn) EI) ⁻¹ >>> (g ⋉ EI >>> (b ~~> c) ⋊ h)) >>> ecomp))) >>> ecomp.
+   ((((#(pmon_cancelr EI) ⁻¹ >>> (f ⋉ EI >>> (a ~~> b) ⋊ g)) >>> ecomp) ⋉ EI >>> (a ~~> c) ⋊ h)) >>> ecomp ~~
+   ((f ⋉ EI >>> (a ~~> b) ⋊ ((#(pmon_cancelr EI) ⁻¹ >>> (g ⋉ EI >>> (b ~~> c) ⋊ h)) >>> ecomp))) >>> ecomp.
 
   intros; symmetry; etransitivity;
      [ setoid_rewrite associativity; apply comp_respects;
@@ -189,14 +189,14 @@ Lemma underlying_associativity `{ec:ECategory(mn:=mn)(EI:=EI)(Eob:=Eob)(Ehom:=Eh
 
   idtac.
     set (iso_shift_left'
-         (iso_backward ((pmon_cancelr mn) (a ~~> b)) ⋉ EI >>> ((a ~~> b) ⋊ g) ⋉ EI) ((a ~~> b) ⋊ g)
-         (((pmon_cancelr mn) ((a ~~> b) ⊗ (b ~~> c))))) as xx.
+         (iso_backward (pmon_cancelr (a ~~> b)) ⋉ EI >>> ((a ~~> b) ⋊ g) ⋉ EI) ((a ~~> b) ⋊ g)
+         ((pmon_cancelr ((a ~~> b) ⊗ (b ~~> c))))) as xx.
     symmetry.
     etransitivity; [ apply xx | apply comp_respects; try reflexivity ].
     clear xx.
 
   setoid_rewrite (fmor_preserves_comp (bin_first EI)).
-    set (ni_commutes (@pmon_cancelr _ _ _ _ _ _ mn) ((iso_backward ((pmon_cancelr mn) (a ~~> b)) >>> (a ~~> b) ⋊ g))) as qq.
+    set (ni_commutes (@pmon_cancelr _ _ _ _ _ _ mn) ((iso_backward (pmon_cancelr (a ~~> b)) >>> (a ~~> b) ⋊ g))) as qq.
     simpl in qq.
     setoid_rewrite <- qq.
     clear qq.
@@ -209,7 +209,7 @@ Lemma underlying_associativity `{ec:ECategory(mn:=mn)(EI:=EI)(Eob:=Eob)(Ehom:=Eh
 
 Instance Underlying `(ec:ECategory(mn:=mn)(EI:=EI)(Eob:=Eob)(Ehom:=Ehom)) : Category Eob (fun a b => EI~>(a~~>b)) :=
 { id    := fun a                                  => eid a
-; comp  := fun a b c g f                          => #(pmon_cancelr _ _)⁻¹ >>> (g ⋉ _ >>> _ ⋊ f) >>> ecomp
+; comp  := fun a b c g f                          => #(pmon_cancelr _)⁻¹ >>> (g ⋉ _ >>> _ ⋊ f) >>> ecomp
 ; eqv   := fun a b (f:EI~>(a~~>b))(g:EI~>(a~~>b)) => f ~~ g
 }.
   abstract (intros; apply Build_Equivalence;
@@ -361,31 +361,19 @@ Instance UnderlyingFunctor `(EF:@EFunctor Ob Hom V bin_obj' bc EI mn Eob1 EHom1 
   Defined.
   Coercion UnderlyingFunctor : EFunctor >-> Functor.
 
-Structure Enrichment :=
-{ enr_v_ob       : Type
-; enr_v_hom      : enr_v_ob -> enr_v_ob -> Type
-; enr_v          : Category enr_v_ob enr_v_hom
-; enr_v_fobj     : prod_obj enr_v enr_v -> enr_v_ob
-; enr_v_f        : Functor (enr_v ×× enr_v) enr_v enr_v_fobj
-; enr_v_i        : enr_v_ob
-; enr_v_mon      : MonoidalCat enr_v enr_v_fobj enr_v_f enr_v_i
-; enr_c_obj      : Type
-; enr_c_hom      : enr_c_obj -> enr_c_obj -> enr_v
-; enr_c          : ECategory enr_v_mon enr_c_obj enr_c_hom
+Class EBinoidalCat `(ec:ECategory) :=
+{ ebc_bobj   : ec -> ec -> ec
+; ebc_first  : forall a:ec, EFunctor ec ec (fun x => ebc_bobj x a)
+; ebc_second : forall a:ec, EFunctor ec ec (fun x => ebc_bobj a x)
 }.
-Coercion enr_c     : Enrichment >-> ECategory.
 
-(* an enrichment for which every object of the enriching category is the tensor of finitely many hom-objects *)
-Structure SurjectiveEnrichment (e:Enrichment) :=
-{ se_enr    := e
-; se_decomp :  @treeDecomposition (enr_v e) (option ((enr_c_obj e)*(enr_c_obj e)))
-                  (fun t => match t with
-                            | None   => enr_v_i e
-                            | Some x => match x with pair y z => enr_c_hom e y z end
-                            end)
-                  (fun d1 d2:enr_v e => enr_v_fobj e (pair_obj d1 d2))
-}.
-Coercion se_enr  : SurjectiveEnrichment >-> Enrichment.
+Instance EBinoidalCat_is_binoidal `(ebc:EBinoidalCat(ec:=ec)) : BinoidalCat (Underlying ec) ebc_bobj.
+  apply Build_BinoidalCat.
+  apply (fun a => UnderlyingFunctor (ebc_first a)).
+  apply (fun a => UnderlyingFunctor (ebc_second a)).
+  Defined.
+
+Coercion EBinoidalCat_is_binoidal : EBinoidalCat >-> BinoidalCat.
 
 (* Enriched Fibrations *)
 Section EFibration.

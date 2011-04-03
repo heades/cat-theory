@@ -94,7 +94,7 @@ Section RestrictToImage.
     Qed.
 End RestrictToImage.
 
-Instance func_opSubcat `(c1:Category Ob1 Hom1)`(c2:Category Ob Hom)`(SP:@SubCategory _ _ c2 Pobj Pmor)
+Instance func_opSubcat `(c1:Category)`(c2:Category)`(SP:@SubCategory _ _ c2 Pobj Pmor)
   {fobj}(F:Functor c1⁽ºᑭ⁾ SP fobj) : Functor c1 SP⁽ºᑭ⁾ fobj :=
   { fmor                := fun a b f => fmor F f }.
   intros. apply (@fmor_respects _ _ _ _ _ _ _ F _ _ f f' H).
@@ -190,7 +190,7 @@ Definition WeaklyMonic
     `{D:Category}
      {Fobj}
      (F:@Functor _ _ C _ _ D Fobj) := forall
-    `{E:Category}
+     Eob EHom (E:@Category Eob EHom)
     `{G :@Functor _ _ E _ _ C Gobj'}
     `{H :@Functor _ _ E _ _ C Hobj'},
     G >>>> F ≃ H >>>> F

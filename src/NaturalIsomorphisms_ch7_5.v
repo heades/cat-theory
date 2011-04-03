@@ -3,7 +3,6 @@ Require Import Preamble.
 Require Import Categories_ch1_3.
 Require Import Functors_ch1_4.
 Require Import Isomorphisms_ch1_5.
-Require Import ProductCategories_ch1_6_1.
 
 (*******************************************************************************)
 (* Chapter 7.5: Natural Isomorphisms                                           *)
@@ -224,6 +223,7 @@ Definition if_respects
   Defined.
 
 Section ni_prod_comp.
+Require Import ProductCategories_ch1_6_1.
   Context
   `{C1:Category}`{C2:Category}
   `{D1:Category}`{D2:Category}
@@ -252,12 +252,3 @@ Section ni_prod_comp.
     Defined.
 End ni_prod_comp.
 
-Structure Retraction `{C:Category} `{D:Category} :=
-{ retraction_section_fobj       : C -> D
-; retraction_section            : Functor C D retraction_section_fobj
-; retraction_retraction_fobj    : D -> C
-; retraction_retraction         : Functor D C retraction_retraction_fobj
-; retraction_composes           : retraction_section >>>> retraction_retraction ≃ functor_id _
-}.
-Implicit Arguments Retraction [ [Ob] [Hom] [Ob0] [Hom0] ].
-Coercion retraction_section : Retraction >-> Functor.

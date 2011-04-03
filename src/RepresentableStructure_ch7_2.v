@@ -23,8 +23,8 @@ Require Import MonoidalCategories_ch7_8.
 Section RepresentableStructure.
   Context `(ec:ECategory(mn:=mn)(V:=V)).
 
-  Definition hom_contravariant {a:ec}{d e:ec}(f:EI~~{V}~~>(d~~>e)) := #(pmon_cancell mn _)⁻¹ >>> (f ⋉ (_ ~~> a)) >>> ecomp.
-  Definition hom_covariant     {a:ec}{d e:ec}(f:EI~~{V}~~>(d~~>e)) := #(pmon_cancelr mn _)⁻¹ >>> ((a ~~> d) ⋊ f) >>> ecomp.
+  Definition hom_contravariant {a:ec}{d e:ec}(f:EI~~{V}~~>(d~~>e)) := #(pmon_cancell _)⁻¹ >>> (f ⋉ (_ ~~> a)) >>> ecomp.
+  Definition hom_covariant     {a:ec}{d e:ec}(f:EI~~{V}~~>(d~~>e)) := #(pmon_cancelr _)⁻¹ >>> ((a ~~> d) ⋊ f) >>> ecomp.
 
   Lemma hom_covariant_distributes     {a b c:ec}{x}(f:a~~{ec}~~>b)(g:b~~{ec}~~>c)
      : hom_covariant (f >>> g) ~~ (hom_covariant (a:=x) f) >>> (hom_covariant g).
@@ -97,7 +97,7 @@ Section RepresentableStructure.
       apply fmor_respects; auto.
     intros.
       unfold hom_covariant.
-      apply (epic _ (iso_epic ((pmon_cancelr mn) (X ~~> a)))).
+      apply (epic _ (iso_epic ((pmon_cancelr) (X ~~> a)))).
       setoid_rewrite <- associativity.
       setoid_rewrite <- associativity.
       setoid_rewrite iso_comp1.
@@ -152,45 +152,3 @@ Section RepresentableStructure.
 End RepresentableStructure.
 Opaque HomFunctor.
 
-Structure MonoidalEnrichment {e:Enrichment} :=
-{ me_enr         :=e
-; me_fobj        : prod_obj e e -> e
-; me_f           : Functor (e ×× e) e me_fobj
-; me_i           : e
-; me_mon         : MonoidalCat e me_fobj me_f me_i
-; me_mf          : MonoidalFunctor me_mon (enr_v_mon e) (HomFunctor e me_i)
-}.
-Implicit Arguments MonoidalEnrichment [ ].
-Coercion me_mon : MonoidalEnrichment >-> MonoidalCat.
-Coercion me_enr : MonoidalEnrichment >-> Enrichment.
-
-(* an enrichment for which hom(I,-) is monoidal, full, faithful, and conservative *)
-Structure MonicMonoidalEnrichment {e}{me:MonoidalEnrichment e} :=
-{ ffme_enr             := me
-; ffme_mf_full         : FullFunctor         (HomFunctor e (me_i me))
-; ffme_mf_faithful     : FaithfulFunctor     (HomFunctor e (me_i me))
-; ffme_mf_conservative : ConservativeFunctor (HomFunctor e (me_i me))
-}.
-Implicit Arguments MonicMonoidalEnrichment [ ].
-Coercion ffme_enr : MonicMonoidalEnrichment >-> MonoidalEnrichment.
-Transparent HomFunctor.
-
-Structure SurjectiveMonicMonoidalEnrichment (e:Enrichment) :=
-{ smme_se       : SurjectiveEnrichment e
-; smme_monoidal : MonoidalEnrichment e
-; smme_me       : MonicMonoidalEnrichment _ smme_monoidal
-}.
-Coercion smme_se : SurjectiveMonicMonoidalEnrichment >-> SurjectiveEnrichment.
-Coercion smme_me : SurjectiveMonicMonoidalEnrichment >-> MonicMonoidalEnrichment.
-
-(* like SurjectiveMonicMonoidalEnrichment, but the Enrichment is a field, not a parameter *)
-Structure SMME :=
-{ smme_e   : Enrichment
-; smme_see : SurjectiveEnrichment smme_e
-; smme_mon : MonoidalEnrichment smme_e
-; smme_mee : MonicMonoidalEnrichment _ smme_mon
-}.
-Coercion smme_e   : SMME >-> Enrichment.
-Coercion smme_see : SMME >-> SurjectiveEnrichment.
-Coercion smme_mon : SMME >-> MonoidalEnrichment.
-Coercion smme_mee : SMME >-> MonicMonoidalEnrichment.

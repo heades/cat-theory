@@ -24,25 +24,31 @@ Require Import NaturalTransformations_ch7_4.
 Require Import NaturalIsomorphisms_ch7_5.
 Require Import FunctorCategories_ch7_7.
 Require Import Coherence_ch7_8.
+
+Require Import PreMonoidalCategories.
+Require Import BinoidalCategories.
 Require Import MonoidalCategories_ch7_8.
+Require Import PreMonoidalCenter.
 
 Require Import Exponentials_ch6.
-(*Require Import CategoryOfCategories_ch7_1.*)
 Require Import Yoneda_ch8.
 Require Import Adjoints_ch9.
 
+(*Require Import CategoryOfCategories_ch7_1.*)
 (*Require Import PolynomialCategories.*)
 (*Require Import CoqCategory.*)
-(*Require Import NaturalDeduction.*)
-(*Require Import NaturalDeductionCategories.*)
 (*Require Import CartesianEnrichmentsHaveMonoidalHomFunctors.*)
-(*Require Import Reification.*)
-(*Require Import GeneralizedArrow.*)
-(*Require Import ReificationFromGArrow.*)
-(*Require Import GArrowFromReification.*)
-(*Require Import Roundtrip.*)
-(*Require Import RoundtripSlides.*)
+
+Require Import RepresentableStructure_ch7_2.
+
+Require Import EquivalentCategories_ch7_8.
+Require Import FreydAFT_ch9_8.
+Require Import KanExtension_ch9_6.
+Require Import LCCCs_ch9_7.
+Require Import Monads_ch10.
+Require Import NaturalNumbersObject_ch9_8.
+Require Import Presheaves_ch9_7.
 
 (* very slow! *)
-(*Require Import FreydCategories.*)
+Require Import FreydCategories.
 (*Require Import Arrows.*)

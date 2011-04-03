@@ -3,7 +3,6 @@ Require Import Preamble.
 Require Import Categories_ch1_3.
 Require Import Functors_ch1_4.
 Require Import Isomorphisms_ch1_5.
-Require Import ProductCategories_ch1_6_1.
 Require Import InitialTerminal_ch2_2.
 Require Import Subcategories_ch7_1.
 Require Import NaturalTransformations_ch7_4.
@@ -11,7 +10,7 @@ Require Import NaturalIsomorphisms_ch7_5.
 Require Import Coherence_ch7_8.
 Require Import BinoidalCategories.
 Require Import PreMonoidalCategories.
-Require Import MonoidalCategories_ch_7_8.
+Require Import MonoidalCategories_ch7_8.
 
 (******************************************************************************)
 (* Facts about the center of a Binoidal or PreMonoidal Category               *)
@@ -79,7 +78,7 @@ Lemma first_preserves_centrality `{C:PreMonoidalCat}{a}{b}(f:a~~{C}~~>b){c} : Ce
   setoid_rewrite pmon_coherent_l at 1.
   setoid_rewrite juggle3.
   setoid_rewrite juggle3.
-  set (@iso_comp2 _ _ _ _ _ ((pmon_assoc C b c0) c)) as q.
+  set (@iso_comp2 _ _ _ _ _ ((pmon_assoc b c0) c)) as q.
   setoid_rewrite q.
   clear q.
   setoid_rewrite right_identity.
@@ -130,7 +129,7 @@ Lemma first_preserves_centrality `{C:PreMonoidalCat}{a}{b}(f:a~~{C}~~>b){c} : Ce
   setoid_rewrite q.
   clear q.
   
-  set (ni_commutes (pmon_assoc _ d c) f) as q.
+  set (ni_commutes (pmon_assoc d c) f) as q.
   apply iso_shift_right' in q.
   unfold fmor in q at 1; simpl in q.
   rewrite q.
@@ -144,7 +143,9 @@ Lemma first_preserves_centrality `{C:PreMonoidalCat}{a}{b}(f:a~~{C}~~>b){c} : Ce
   clear q.
 
   setoid_rewrite juggle3.
-  setoid_rewrite (iso_comp1 ((pmon_assoc C d c) a)).
+  set (iso_comp1 ((pmon_assoc d c) a)) as q.
+  setoid_rewrite q.
+  clear q.
   setoid_rewrite right_identity.
 
   set (ni_commutes (pmon_assoc_rr b c) g) as q.
@@ -155,7 +156,7 @@ Lemma first_preserves_centrality `{C:PreMonoidalCat}{a}{b}(f:a~~{C}~~>b){c} : Ce
   setoid_rewrite q.
   clear q.
   
-  set (ni_commutes (pmon_assoc _ c0 c) f) as q.
+  set (ni_commutes (pmon_assoc c0 c) f) as q.
   unfold fmor in q; simpl in q.
   apply iso_shift_right' in q.
   rewrite q.
@@ -167,7 +168,9 @@ Lemma first_preserves_centrality `{C:PreMonoidalCat}{a}{b}(f:a~~{C}~~>b){c} : Ce
 
   setoid_rewrite juggle3.
   setoid_rewrite juggle3.
-  setoid_rewrite (iso_comp1 ((pmon_assoc C c0 c) b)).
+  set (iso_comp1 ((pmon_assoc c0 c) b)) as q.
+  setoid_rewrite q.
+  clear q.
   setoid_rewrite right_identity.
 
   setoid_rewrite pmon_coherent_r.
@@ -197,7 +200,7 @@ Lemma second_preserves_centrality `{C:PreMonoidalCat}{a}{b}(f:a~~{C}~~>b){c} : C
   setoid_rewrite q.
   clear q.
   
-  set (ni_commutes (pmon_assoc _ c d) f) as q.
+  set (ni_commutes (pmon_assoc c d) f) as q.
   apply symmetry in q.
   apply iso_shift_left' in q.
   unfold fmor in q at 1; simpl in q.
@@ -219,7 +222,7 @@ Lemma second_preserves_centrality `{C:PreMonoidalCat}{a}{b}(f:a~~{C}~~>b){c} : C
   setoid_rewrite q.
   clear q.
   
-  set (ni_commutes (pmon_assoc _ c c0) f) as q.
+  set (ni_commutes (pmon_assoc c c0) f) as q.
   unfold fmor in q; simpl in q.
   symmetry in q.
   apply iso_shift_left' in q.
@@ -229,7 +232,7 @@ Lemma second_preserves_centrality `{C:PreMonoidalCat}{a}{b}(f:a~~{C}~~>b){c} : C
   rewrite pmon_coherent_l.
   setoid_rewrite <- associativity.
   setoid_rewrite juggle3.
-  set (iso_comp2 ((pmon_assoc _ c c0) b)) as q.
+  set (iso_comp2 ((pmon_assoc c c0) b)) as q.
   setoid_rewrite q.
   setoid_rewrite right_identity.
   clear q.
@@ -302,116 +305,42 @@ Lemma second_preserves_centrality `{C:PreMonoidalCat}{a}{b}(f:a~~{C}~~>b){c} : C
   setoid_rewrite <- associativity.
   setoid_rewrite juggle3.
   setoid_rewrite pmon_coherent_r.
-  set (iso_comp1 ((pmon_assoc C c0 b) c)) as x.
+  set (iso_comp1 ((pmon_assoc c0 b) c)) as x.
   setoid_rewrite x.
   clear x.
   setoid_rewrite right_identity.
   reflexivity.
   Qed.
 
-Section CenterMonoidal.
+Section Center_is_Monoidal.
 
-  Context `(mc:PreMonoidalCat(I:=pI)).
+  Context `(pm:PreMonoidalCat(I:=pmI)).
 
-  Definition CenterMonoidal_Fobj : (Center mc) ×× (Center mc) -> Center mc.
-    intro.
-    destruct X as [a b].
-    destruct a as [a apf].
-    destruct b as [b bpf].
-    exists (a ⊗ b); auto.
+  Definition Center_bobj : Center pm -> Center pm -> Center pm.
+    apply PreMonoidalSubCategory_bobj.
+    intros; auto.
     Defined.
 
-  Definition CenterMonoidal_F_fmor (a b:(Center mc) ×× (Center mc)) : 
-    (a~~{(Center mc) ×× (Center mc)}~~>b) ->
-    ((CenterMonoidal_Fobj a)~~{Center mc}~~>(CenterMonoidal_Fobj b)).
-    destruct a as [[a1 a1'] [a2 a2']].
-    destruct b as [[b1 b1'] [b2 b2']].
-    intro f.
-    destruct f as [[f1 f1'] [f2 f2']].
-    simpl in *.
-    unfold hom.
-    simpl.
-    exists (f1 ⋉ a2 >>> b1 ⋊ f2).
-    apply central_morphisms_compose.
+  Definition Center_is_Binoidal : BinoidalCat (Center pm) Center_bobj.
+    apply PreMonoidalSubCategory_is_Binoidal.
+    intros.
     apply first_preserves_centrality; auto.
+    intros.
     apply second_preserves_centrality; auto.
     Defined.
 
-  Definition CenterMonoidal_F : Functor _ _ CenterMonoidal_Fobj.
-    refine {| fmor := CenterMonoidal_F_fmor |}.
+  Definition Center_is_PreMonoidal : PreMonoidalCat Center_is_Binoidal (exist _ pmI I).
+    apply PreMonoidalSubCategory_PreMonoidal.
+    Defined.
+
+  Definition Center_is_Monoidal : MonoidalCat Center_is_PreMonoidal.
+    apply Build_MonoidalCat.
+    apply Build_CommutativeCat.
     intros.
-    destruct a as [[a1 a1'] [a2 a2']].
-    destruct b as [[b1 b1'] [b2 b2']].
-    destruct f as [[f1 f1'] [f2 f2']].
-    destruct f' as [[g1 g1'] [g2 g2']].
-    simpl in *.
-    destruct H.
-    apply comp_respects.
-    set (fmor_respects(-⋉a2)) as q; apply q; auto.
-    set (fmor_respects(b1⋊-)) as q; apply q; auto.
-    intros.
-    destruct a as [[a1 a1'] [a2 a2']].
-    simpl in *.
-    setoid_rewrite (fmor_preserves_id (-⋉a2)).
-    setoid_rewrite (fmor_preserves_id (a1⋊-)).
-    apply left_identity.
-    intros.
-    destruct a as [[a1 a1'] [a2 a2']].
-    destruct b as [[b1 b1'] [b2 b2']].
-    destruct c as [[c1 c1'] [c2 c2']].
-    destruct f as [[f1 f1'] [f2 f2']].
-    destruct g as [[g1 g1'] [g2 g2']].
-    simpl in *.
-    setoid_rewrite juggle3.
-    setoid_rewrite <- (centralmor_first(CentralMorphism:=g1')).
-    setoid_rewrite <- juggle3.
-    setoid_rewrite <- fmor_preserves_comp.
-    reflexivity.
+    apply Build_CentralMorphism; unfold hom; 
+      intros; destruct f; destruct a; destruct c; destruct d; destruct b; destruct g; simpl in *.
+    apply centralmor_second.
+    apply centralmor_second.
     Defined.
 
-  Definition center_I : Center mc := exist _ pI I.
-
-  Definition center_cancelr : (func_rlecnac center_I >>>> CenterMonoidal_F) <~~~> functor_id (Center mc).
-    Definition center_cancelr_niso : ∀A : Center mc, CenterMonoidal_Fobj (pair_obj A center_I) ≅ A.
-      intros.
-      destruct A; simpl.
-      set (ni_iso (pmon_cancelr mc) x) as q.
-      (*refine {| iso_forward := #q ; iso_backward := iso_backward q |}.*)
-      admit.
-      Defined.
-    refine {| ni_iso := center_cancelr_niso |}.
-    admit.
-    Defined.
-
-  Definition center_cancell : (func_llecnac center_I >>>> CenterMonoidal_F) <~~~> functor_id (Center mc).
-    Definition center_cancell_niso : ∀A : Center mc, CenterMonoidal_Fobj (pair_obj center_I A) ≅ A.
-      admit.
-      Defined.
-    refine {| ni_iso := center_cancell_niso |}.
-    admit.
-    Defined.
-
-  Definition center_assoc :
-    ((CenterMonoidal_F **** (functor_id _)) >>>> CenterMonoidal_F)
-    <~~~> func_cossa >>>> ((((functor_id _) **** CenterMonoidal_F) >>>> CenterMonoidal_F)).
-
-    Definition center_assoc_niso : ∀A : (Center mc ×× Center mc) ×× Center mc,
-      ((((CenterMonoidal_F **** (functor_id _)) >>>> CenterMonoidal_F) A))
-      ≅ ((func_cossa >>>> ((((functor_id _) **** CenterMonoidal_F) >>>> CenterMonoidal_F))) A).
-      admit.
-      Defined.
-
-    refine {| ni_iso := center_assoc_niso |}.
-    admit.
-    Defined.
-
-  Instance CenterMonoidal : MonoidalCat _ _ CenterMonoidal_F (exist _ pI I) :=
-  { mon_cancelr := center_cancelr
-  ; mon_cancell := center_cancell
-  ; mon_assoc   := center_assoc
-  }.
-    admit.
-    admit.
-    Defined.
-
-End CenterMonoidal.
+End Center_is_Monoidal.

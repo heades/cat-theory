@@ -8,6 +8,7 @@ Require Import General.
 Require Import Categories_ch1_3.
 Require Import Functors_ch1_4.
 Require Import Isomorphisms_ch1_5.
+Require Import NaturalIsomorphisms_ch7_5.
 
 (* Definition 7.24 *)
 Class EquivalentCategories `(C:Category)`(D:Category){Fobj}{Gobj}(F:Functor C D Fobj)(G:Functor D C Gobj) :=
