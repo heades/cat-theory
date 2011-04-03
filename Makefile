@@ -4,7 +4,7 @@ allfiles := $(coqfiles) $(shell find src -name \*.hs)
 
 default: $(allfiles)
 	make build/Makefile.coq
-	cd build; make OPT=-dont-load-proofs -f Makefile.coq Main.vo
+	cd build; make OPT="-opt -dont-load-proofs" -f Makefile.coq Main.vo
 
 build/Makefile.coq: $(coqfiles)
 	mkdir -p build
