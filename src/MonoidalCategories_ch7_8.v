@@ -148,13 +148,12 @@ Class DiagonalCat `(mc:MonoidalCat) :=
 }.
 
 Class CartesianCat `(mc:MonoidalCat) :=
-{ car_terminal  :> Terminal mc
-; car_one       :  one ≅ pmon_I
+{ car_terminal  :> TerminalObject mc pmon_I
 ; car_diagonal  :  DiagonalCat mc
-; car_law1      : forall {a}, id a ~~ (copy(DiagonalCat:=car_diagonal) a) >>> ((drop a >>> #car_one) ⋉ a) >>> (#(pmon_cancell _))
-; car_law2      : forall {a}, id a ~~ (copy(DiagonalCat:=car_diagonal) a) >>> (a ⋊ (drop a >>> #car_one)) >>> (#(pmon_cancelr _))
+; car_law1      :  forall {a}, id a ~~ (copy(DiagonalCat:=car_diagonal) a) >>> (drop a  ⋉ a) >>> (#(pmon_cancell _))
+; car_law2      :  forall {a}, id a ~~ (copy(DiagonalCat:=car_diagonal) a) >>> (a ⋊ drop  a) >>> (#(pmon_cancelr _))
 ; car_mn        := mc
 }.
 Coercion car_diagonal : CartesianCat >-> DiagonalCat.
-Coercion car_terminal : CartesianCat >-> Terminal.
+Coercion car_terminal : CartesianCat >-> TerminalObject.
 Coercion car_mn       : CartesianCat >-> MonoidalCat.

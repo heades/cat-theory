@@ -39,7 +39,7 @@ Lemma central_morphisms_compose `{bc:BinoidalCat}{a b c}(f:a~>b)(g:b~>c)
   Qed.
 
 (* the central morphisms of a category constitute a subcategory *)
-Definition Center `(bc:BinoidalCat) : SubCategory bc (fun _ => True) (fun _ _ _ _ f => CentralMorphism f).
+Definition Center `(bc:BinoidalCat) : WideSubcategory bc (fun _ _ f => CentralMorphism f).
   apply Build_SubCategory; intros.
   apply Build_CentralMorphism; intros.
   abstract (setoid_rewrite (fmor_preserves_id(bin_first c));
@@ -50,7 +50,6 @@ Definition Center `(bc:BinoidalCat) : SubCategory bc (fun _ => True) (fun _ _ _ 
               setoid_rewrite left_identity; setoid_rewrite right_identity; reflexivity).
   apply central_morphisms_compose; auto.
   Qed.
-
 
 Lemma first_preserves_centrality `{C:PreMonoidalCat}{a}{b}(f:a~~{C}~~>b){c} : CentralMorphism f -> CentralMorphism (f ⋉ c).
   intro cm.
@@ -316,21 +315,14 @@ Section Center_is_Monoidal.
 
   Context `(pm:PreMonoidalCat(I:=pmI)).
 
-  Definition Center_bobj : Center pm -> Center pm -> Center pm.
-    apply PreMonoidalSubCategory_bobj.
-    intros; auto.
+  Definition Center_is_Binoidal : BinoidalCat (Center pm) bin_obj'.
+    apply PreMonoidalWideSubcategory_is_Binoidal.
+    intros; apply first_preserves_centrality; auto.
+    intros; apply second_preserves_centrality; auto.
     Defined.
 
-  Definition Center_is_Binoidal : BinoidalCat (Center pm) Center_bobj.
-    apply PreMonoidalSubCategory_is_Binoidal.
-    intros.
-    apply first_preserves_centrality; auto.
-    intros.
-    apply second_preserves_centrality; auto.
-    Defined.
-
-  Definition Center_is_PreMonoidal : PreMonoidalCat Center_is_Binoidal (exist _ pmI I).
-    apply PreMonoidalSubCategory_PreMonoidal.
+  Definition Center_is_PreMonoidal : PreMonoidalCat Center_is_Binoidal pmI.
+    apply PreMonoidalWideSubcategory_PreMonoidal.
     Defined.
 
   Definition Center_is_Monoidal : MonoidalCat Center_is_PreMonoidal.
@@ -338,9 +330,9 @@ Section Center_is_Monoidal.
     apply Build_CommutativeCat.
     intros.
     apply Build_CentralMorphism; unfold hom; 
-      intros; destruct f; destruct a; destruct c; destruct d; destruct b; destruct g; simpl in *.
-    apply centralmor_second.
-    apply centralmor_second.
+      intros; destruct f; destruct g; simpl in *.
+    apply (centralmor_second(CentralMorphism:=c1)).
+    apply (centralmor_second(CentralMorphism:=c0)).
     Defined.
 
 End Center_is_Monoidal.

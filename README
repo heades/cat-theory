@@ -22,3 +22,14 @@ seems to know what's going on, and several different representations
 all trigger the bug.  Therefore, I have -- unfortunately -- chosen
 definitions which avoid product categories and bifunctors wherever
 possible.
+
+IMPORTANT NOTE ABOUT SUBCATEGORIES: non-wide subcategories (that is,
+subcategories which do not include all objects of the parent category)
+are awkward to handle in Coq.  This is because they unavoidably
+involve reasoning about equality of objects, and objects are the
+indices of the types of hom-sets.  Coq is not very good at dealing
+with equality between types which are the indices of other types.  For
+this reason, I have two kinds of subcategory: WideSubcategory (which
+behaves quite nicely) and FullSubcategory (which can cause problems).
+Every subcategory of C is a full subcategory of a wide subcategory of
+C, and you must formalize it this way.

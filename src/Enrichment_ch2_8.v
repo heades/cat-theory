@@ -362,9 +362,10 @@ Instance UnderlyingFunctor `(EF:@EFunctor Ob Hom V bin_obj' bc EI mn Eob1 EHom1 
   Coercion UnderlyingFunctor : EFunctor >-> Functor.
 
 Class EBinoidalCat `(ec:ECategory) :=
-{ ebc_bobj   : ec -> ec -> ec
-; ebc_first  : forall a:ec, EFunctor ec ec (fun x => ebc_bobj x a)
-; ebc_second : forall a:ec, EFunctor ec ec (fun x => ebc_bobj a x)
+{ ebc_bobj   :  ec -> ec -> ec
+; ebc_first  :  forall a:ec, EFunctor ec ec (fun x => ebc_bobj x a)
+; ebc_second :  forall a:ec, EFunctor ec ec (fun x => ebc_bobj a x)
+; ebc_ec     := ec  (* this isn't a coercion - avoids duplicate paths *)
 }.
 
 Instance EBinoidalCat_is_binoidal `(ebc:EBinoidalCat(ec:=ec)) : BinoidalCat (Underlying ec) ebc_bobj.

@@ -22,21 +22,21 @@ Require Import MonoidalCategories_ch7_8.
 (* A Freyd Category is... *)
 Class FreydCategory
 
-  (* a cartesian category C *)
-  `(C:CartesianCat(Ob:=Ob)(C:=C1))
+   (* a cartesian category C *)
+  `(C:CartesianCat(Ob:=Ob)(C:=C1)(bin_obj':=bobj))
 
-  (* a premonoidal category K with the same objects (its unit object is 1 because the functor is both IIO and strict) *)
+   (* a premonoidal category K with the same objects (its unit object is 1 because the functor is both IIO and strict) *)
   `(K:PreMonoidalCat(Ob:=Ob)(bin_obj':=bobj)(I:=@one _ _ _ C))
 
-  (* an identity-on-objects functor J:C->Z(K) *)
-:= { fc_J       : Functor C (Center_is_Monoidal K) (fun x => exist (fun _ => True) x I)
+   (* an identity-on-objects functor J:C->Z(K) *)
+:= { fc_J       : Functor C (Center_is_Monoidal K) (fun x => x)
 
-  (* which is not only monoidal *)
+   (* which is a monoidal functor *)
    ; fc_mf_J    : MonoidalFunctor C (Center_is_Monoidal K) fc_J
 
-   (* but in fact strict (meaning the functor's coherence maps are identities) *)
-   (*; fc_strict  : forall a b, #(mf_first a b) ~~ id _ 
-         FIXME - I will need to separate Subcategory from FullSubCategory in order to fix this *)
+   (* and strict (meaning the functor's coherence maps are identities) *)
+   ; fc_strict_first   : forall a b, #(mf_first(PreMonoidalFunctor:=fc_mf_J) a b) ~~ id _  (* mf_consistent gives us mf_second *)
+(*   ; fc_strict_id      : #(mf_i(PreMonoidalFunctor:=fc_mf_J)) ~~ id _*)
 
    ; fc_C       := C
    ; fc_K       := K

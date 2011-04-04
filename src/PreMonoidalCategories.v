@@ -67,7 +67,7 @@ Lemma MacLane_ex_VII_1_1 `{mn:PreMonoidalCat(I:=EI)} a b
 Class PreMonoidalFunctor
 `(PM1:PreMonoidalCat(C:=C1)(I:=I1))
 `(PM2:PreMonoidalCat(C:=C2)(I:=I2))
- (fobj : C1 -> C2          ) :=
+ (fobj : C1 -> C2                 ) :=
 { mf_F          :> Functor C1 C2 fobj
 ; mf_i          :  I2 ≅ mf_F I1
 ; mf_first      :  ∀ a,              mf_F >>>> bin_first  (mf_F a)  <~~~>  bin_first  a >>>> mf_F
@@ -81,17 +81,331 @@ Class PreMonoidalFunctor
 }.
 Coercion mf_F : PreMonoidalFunctor >-> Functor.
 
-Definition PreMonoidalFunctorsCompose
+Section PreMonoidalFunctorsCompose.
+  Context
   `{PM1   :PreMonoidalCat(C:=C1)(I:=I1)}
   `{PM2   :PreMonoidalCat(C:=C2)(I:=I2)}
    {fobj12:C1 -> C2                    }
    (PMF12 :PreMonoidalFunctor PM1 PM2 fobj12)
   `{PM3   :PreMonoidalCat(C:=C3)(I:=I3)}
    {fobj23:C2 -> C3                    }
-   (PMF23 :PreMonoidalFunctor PM2 PM3 fobj23)
-   : PreMonoidalFunctor PM1 PM3 (fobj23 ○ fobj12).
-   admit.
-   Defined.
+   (PMF23 :PreMonoidalFunctor PM2 PM3 fobj23).
+
+  Definition compose_mf := PMF12 >>>> PMF23.
+
+  Definition compose_mf_i : I3 ≅ PMF23 (PMF12 I1).
+    eapply iso_comp.
+    apply (mf_i(PreMonoidalFunctor:=PMF23)).
+    apply functors_preserve_isos.
+    apply (mf_i(PreMonoidalFunctor:=PMF12)).
+    Defined.
+
+  Definition compose_mf_first a : compose_mf >>>> bin_first (compose_mf a)  <~~~>  bin_first  a >>>> compose_mf.
+    set (mf_first(PreMonoidalFunctor:=PMF12) a) as mf_first12.
+    set (mf_first(PreMonoidalFunctor:=PMF23) (PMF12 a)) as mf_first23.
+    unfold functor_fobj in *; simpl in *.
+    unfold compose_mf.
+    eapply ni_comp.
+    apply (ni_associativity PMF12 PMF23 (- ⋉fobj23 (fobj12 a))).
+    eapply ni_comp.
+    apply (ni_respects PMF12 PMF12 (PMF23 >>>> - ⋉fobj23 (fobj12 a)) (- ⋉fobj12 a >>>> PMF23)).
+    apply  ni_id.
+    apply mf_first23.
+    clear mf_first23.
+
+    eapply ni_comp.
+    eapply ni_inv.
+    apply (ni_associativity PMF12 (- ⋉fobj12 a) PMF23).
+
+    apply ni_inv.
+    eapply ni_comp.
+    eapply ni_inv.
+    eapply (ni_associativity _ PMF12 PMF23).
+
+    apply ni_respects; [ idtac | apply ni_id ].
+    apply ni_inv.
+    apply mf_first12.
+    Defined.
+    
+  Definition compose_mf_second a : compose_mf >>>> bin_second (compose_mf a)  <~~~>  bin_second  a >>>> compose_mf.
+    set (mf_second(PreMonoidalFunctor:=PMF12) a) as mf_second12.
+    set (mf_second(PreMonoidalFunctor:=PMF23) (PMF12 a)) as mf_second23.
+    unfold functor_fobj in *; simpl in *.
+    unfold compose_mf.
+    eapply ni_comp.
+    apply (ni_associativity PMF12 PMF23 (fobj23 (fobj12 a) ⋊-)).
+    eapply ni_comp.
+    apply (ni_respects PMF12 PMF12 (PMF23 >>>> fobj23 (fobj12 a) ⋊-) (fobj12 a ⋊- >>>> PMF23)).
+    apply  ni_id.
+    apply mf_second23.
+    clear mf_second23.
+
+    eapply ni_comp.
+    eapply ni_inv.
+    apply (ni_associativity PMF12 (fobj12 a ⋊ -) PMF23).
+
+    apply ni_inv.
+    eapply ni_comp.
+    eapply ni_inv.
+    eapply (ni_associativity (a ⋊-) PMF12 PMF23).
+
+    apply ni_respects; [ idtac | apply ni_id ].
+    apply ni_inv.
+    apply mf_second12.
+    Defined.
+
+  Lemma compose_assoc_coherence a b c : 
+   (#((pmon_assoc (compose_mf a) (fobj23 (fobj12 c))) (compose_mf b)) >>>
+    compose_mf a ⋊ #((compose_mf_second b) c)) >>>
+   #((compose_mf_second a) (b ⊗ c)) ~~
+   (#((compose_mf_second a) b) ⋉ fobj23 (fobj12 c) >>>
+    #((compose_mf_second (a ⊗ b)) c)) >>> compose_mf \ #((pmon_assoc a c) b).
+(*
+      set (mf_assoc a b c) as x.
+      set (mf_assoc (fobj12 a) (fobj12 b) (fobj12 c)) as x'.
+      unfold functor_fobj in *.
+      simpl in *.
+      etransitivity.
+      etransitivity.
+      etransitivity.
+      Focus 3.
+      apply x'.
+
+      apply iso_shift_left' in x'.
+
+      unfold compose_mf_second; simpl.
+      unfold functor_fobj; simpl.
+      set (mf_second (fobj12 b)) as m.
+      assert (mf_second (fobj12 b)=m). reflexivity.
+      destruct m; simpl.
+      setoid_rewrite <- fmor_preserves_comp.
+      setoid_rewrite <- fmor_preserves_comp.
+      setoid_rewrite <- fmor_preserves_comp.
+      setoid_rewrite <- fmor_preserves_comp.
+      setoid_rewrite <- fmor_preserves_comp.
+      setoid_rewrite fmor_preserves_id.
+      setoid_rewrite fmor_preserves_id.
+      setoid_rewrite fmor_preserves_id.
+      setoid_rewrite right_identity.
+      setoid_rewrite left_identity.
+      setoid_rewrite left_identity.
+      setoid_rewrite left_identity.
+
+      set (mf_second (fobj12 (a ⊗ b))) as m''.
+      assert (mf_second (fobj12 (a ⊗ b))=m''). reflexivity.
+      destruct m''; simpl.
+      unfold functor_fobj; simpl.
+      setoid_rewrite fmor_preserves_id.
+      setoid_rewrite fmor_preserves_id.
+      setoid_rewrite right_identity.
+      setoid_rewrite left_identity.
+      setoid_rewrite left_identity.
+      setoid_rewrite left_identity.
+
+      set (mf_second (fobj12 a)) as m'.
+      assert (mf_second (fobj12 a)=m'). reflexivity.
+      destruct m'; simpl.
+      setoid_rewrite <- fmor_preserves_comp.
+      setoid_rewrite <- fmor_preserves_comp.
+      setoid_rewrite <- fmor_preserves_comp.
+      setoid_rewrite <- fmor_preserves_comp.
+      setoid_rewrite <- fmor_preserves_comp.
+      setoid_rewrite    left_identity.
+      setoid_rewrite    left_identity.
+      setoid_rewrite    left_identity.
+      setoid_rewrite    right_identity.
+      assert (fobj23 (fobj12 a) ⋊ PMF23 \ id (PMF12 (b ⊗ c)) ~~ id _).
+      (* *)
+      setoid_rewrite H2.
+      setoid_rewrite left_identity.
+      assert ((id (fobj23 (fobj12 a) ⊗ fobj23 (fobj12 b)) ⋉ fobj23 (fobj12 c)) ~~ id _).
+      (* *)
+      setoid_rewrite H3.
+      setoid_rewrite left_identity.
+      assert (id (fobj23 (fobj12 a ⊗ fobj12 b)) ⋉ fobj23 (fobj12 c) ~~ id _).
+      (* *)
+        setoid_rewrite H4.
+        setoid_rewrite left_identity.
+        clear H4.
+        setoid_rewrite left_identity.
+      assert (id (fobj23 (fobj12 (a ⊗ b))) ⋉ fobj23 (fobj12 c) ~~ id _).
+      (* *)
+        setoid_rewrite H4.
+        setoid_rewrite right_identity.
+        clear H4.
+      assert ((fobj23 (fobj12 a) ⋊ PMF23 \ id (PMF12 b)) ⋉ fobj23 (fobj12 c) ~~ id _).
+      (* *)
+        setoid_rewrite H4.
+        setoid_rewrite left_identity.
+        clear H4.
+      unfold functor_comp in ni_commutes0; simpl in ni_commutes0.
+      unfold functor_comp in ni_commutes;  simpl in ni_commutes.
+      unfold functor_comp in ni_commutes1;  simpl in ni_commutes1.
+
+
+      unfold functor_fobj in *.
+      simpl in *.
+      setoid_rewrite x in x'.
+      rewrite H1.
+      set (ni_commutes0 (a )
+      setoid_rewrite fmor_preserves_id.
+      etransitivity.
+      eapply comp_respects.
+      reflexivity.
+      eapply comp_respects.
+      eapply comp_respects.
+        apply 
+      Focus 2.
+      eapply fmor_preserves_id.
+      setoid_rewrite    (fmor_preserves_id PMF23).
+*)
+    admit.
+    Qed.
+
+  Instance PreMonoidalFunctorsCompose : PreMonoidalFunctor PM1 PM3 (fobj23 ○ fobj12) :=
+  { mf_i      := compose_mf_i
+  ; mf_F      := compose_mf
+  ; mf_first  := compose_mf_first  
+  ; mf_second := compose_mf_second }.
+    intros; unfold compose_mf_first; unfold compose_mf_second.
+      set (mf_first (PMF12 a)) as x in *.
+      set (mf_second (PMF12 b)) as y in *.
+      assert (x=mf_first (PMF12 a)). reflexivity.
+      assert (y=mf_second (PMF12 b)). reflexivity.
+      destruct x.
+      destruct y.
+      simpl.
+      repeat setoid_rewrite left_identity.
+      repeat setoid_rewrite right_identity.
+      set (mf_consistent (PMF12 a) (PMF12 b)) as later.
+      apply comp_respects; try reflexivity.
+      unfold functor_comp.
+      unfold functor_fobj; simpl.
+      set (ni_commutes _ _ (id (fobj12 b))) as x.
+      unfold functor_comp in x.
+      simpl in x.
+      unfold functor_fobj in x.
+      symmetry in x.
+      etransitivity.
+      apply x.
+      clear x.
+      set (ni_commutes0 _ _ (id (fobj12 a))) as x'.
+      unfold functor_comp in x'.
+      simpl in x'.
+      unfold functor_fobj in x'.
+      etransitivity; [ idtac | apply x' ].
+      clear x'.
+      setoid_rewrite fmor_preserves_id.
+      setoid_rewrite fmor_preserves_id.
+      setoid_rewrite right_identity.
+      rewrite <- H in later.
+      rewrite <- H0 in later.
+      simpl in later.
+      apply later.
+      apply fmor_respects.
+      apply (mf_consistent a b).
+
+    intros.
+      simpl.
+      apply mf_center.
+      apply mf_center.
+      auto.
+
+    intros.
+      unfold compose_mf_first; simpl.
+      set (mf_first (PMF12 b)) as m.
+      assert (mf_first (PMF12 b)=m). reflexivity.
+      destruct m.
+      simpl.
+      unfold functor_fobj; simpl.
+      repeat setoid_rewrite <- fmor_preserves_comp.
+      repeat setoid_rewrite left_identity.
+      repeat setoid_rewrite right_identity.
+
+      set (mf_cancell b) as y.
+      set (mf_cancell (fobj12 b)) as y'.
+      unfold functor_fobj in *.
+      setoid_rewrite y in y'.
+      clear y.
+      setoid_rewrite <- fmor_preserves_comp in y'.
+      setoid_rewrite <- fmor_preserves_comp in y'.
+      etransitivity.
+      apply y'.
+      clear y'.
+
+      repeat setoid_rewrite <- associativity.
+      apply comp_respects; try reflexivity.
+      apply comp_respects; try reflexivity.
+      repeat setoid_rewrite associativity.
+      apply comp_respects; try reflexivity.
+
+      set (ni_commutes _ _ (id (fobj12 I1))) as x.
+      unfold functor_comp in x.
+      unfold functor_fobj in x.
+      simpl in x.
+      setoid_rewrite <- x.
+      clear x.
+      setoid_rewrite fmor_preserves_id.
+      setoid_rewrite fmor_preserves_id.
+      setoid_rewrite right_identity.
+
+      rewrite H.
+      simpl.
+      clear H.
+      unfold functor_comp in ni_commutes.
+      simpl in ni_commutes.
+      apply ni_commutes.
+
+    intros.
+      unfold compose_mf_second; simpl.
+      set (mf_second (PMF12 a)) as m.
+      assert (mf_second (PMF12 a)=m). reflexivity.
+      destruct m.
+      simpl.
+      unfold functor_fobj; simpl.
+      repeat setoid_rewrite <- fmor_preserves_comp.
+      repeat setoid_rewrite left_identity.
+      repeat setoid_rewrite right_identity.
+
+      set (mf_cancelr a) as y.
+      set (mf_cancelr (fobj12 a)) as y'.
+      unfold functor_fobj in *.
+      setoid_rewrite y in y'.
+      clear y.
+      setoid_rewrite <- fmor_preserves_comp in y'.
+      setoid_rewrite <- fmor_preserves_comp in y'.
+      etransitivity.
+      apply y'.
+      clear y'.
+
+      repeat setoid_rewrite <- associativity.
+      apply comp_respects; try reflexivity.
+      apply comp_respects; try reflexivity.
+      repeat setoid_rewrite associativity.
+      apply comp_respects; try reflexivity.
+
+      set (ni_commutes _ _ (id (fobj12 I1))) as x.
+      unfold functor_comp in x.
+      unfold functor_fobj in x.
+      simpl in x.
+      setoid_rewrite <- x.
+      clear x.
+      setoid_rewrite fmor_preserves_id.
+      setoid_rewrite fmor_preserves_id.
+      setoid_rewrite right_identity.
+
+      rewrite H.
+      simpl.
+      clear H.
+      unfold functor_comp in ni_commutes.
+      simpl in ni_commutes.
+      apply ni_commutes.
+
+    apply compose_assoc_coherence.
+      Defined.
+
+End PreMonoidalFunctorsCompose.
+
 
 (*******************************************************************************)
 (* Braided and Symmetric Categories                                            *)
@@ -111,144 +425,305 @@ Class SymmetricCat `(bc:BraidedCat) :=
 }.
 
 
-Section PreMonoidalSubCategory.
+(* a wide subcategory inherits the premonoidal structure if it includes all of the coherence maps *)
+Section PreMonoidalWideSubcategory.
 
   Context `(pm:PreMonoidalCat(I:=pmI)).
-  Context  {Pobj}{Pmor}(S:SubCategory pm Pobj Pmor).
-  Context  (Pobj_unit:Pobj pmI).
-  Context  (Pobj_closed:forall {a}{b}, Pobj a -> Pobj b -> Pobj (a⊗b)).
-  Implicit Arguments Pobj_closed [[a][b]].
-  Context  (Pmor_first: forall {a}{b}{c}{f}(pa:Pobj a)(pb:Pobj b)(pc:Pobj c)(pf:Pmor _ _ pa pb f),
-                            Pmor _ _ (Pobj_closed pa pc) (Pobj_closed pb pc) (f ⋉ c)).
-  Context  (Pmor_second: forall {a}{b}{c}{f}(pa:Pobj a)(pb:Pobj b)(pc:Pobj c)(pf:Pmor _ _ pa pb f),
-                            Pmor _ _ (Pobj_closed pc pa) (Pobj_closed pc pb) (c ⋊ f)).
-  Context  (Pmor_assoc: forall {a}{b}{c}(pa:Pobj a)(pb:Pobj b)(pc:Pobj c),
-                            Pmor _ _
-                            (Pobj_closed (Pobj_closed pa pb) pc)
-                            (Pobj_closed pa (Pobj_closed pb pc))
-                            #(pmon_assoc a c b)).
-  Context  (Pmor_unassoc: forall {a}{b}{c}(pa:Pobj a)(pb:Pobj b)(pc:Pobj c),
-                            Pmor _ _
-                            (Pobj_closed pa (Pobj_closed pb pc))
-                            (Pobj_closed (Pobj_closed pa pb) pc)
-                            #(pmon_assoc a c b)⁻¹).
-  Context  (Pmor_cancell: forall {a}(pa:Pobj a),
-                            Pmor _ _ (Pobj_closed Pobj_unit pa) pa 
-                            #(pmon_cancell a)).
-  Context  (Pmor_uncancell: forall {a}(pa:Pobj a),
-                            Pmor _ _ pa (Pobj_closed Pobj_unit pa)
-                            #(pmon_cancell a)⁻¹).
-  Context  (Pmor_cancelr: forall {a}(pa:Pobj a),
-                            Pmor _ _ (Pobj_closed pa Pobj_unit) pa 
-                            #(pmon_cancelr a)).
-  Context  (Pmor_uncancelr: forall {a}(pa:Pobj a),
-                            Pmor _ _ pa (Pobj_closed pa Pobj_unit)
-                            #(pmon_cancelr a)⁻¹).
+  Context  {Pmor}(S:WideSubcategory pm Pmor).
+  Context  (Pmor_first  : forall {a}{b}{c}{f}(pf:Pmor a b f), Pmor _ _ (f ⋉ c)).
+  Context  (Pmor_second : forall {a}{b}{c}{f}(pf:Pmor a b f), Pmor _ _ (c ⋊ f)).
+  Context  (Pmor_assoc  : forall {a}{b}{c}, Pmor _ _ #(pmon_assoc a c b)).
+  Context  (Pmor_unassoc: forall {a}{b}{c}, Pmor _ _ #(pmon_assoc a c b)⁻¹).
+  Context  (Pmor_cancell: forall {a}, Pmor _ _ #(pmon_cancell a)).
+  Context  (Pmor_uncancell: forall {a}, Pmor _ _ #(pmon_cancell a)⁻¹).
+  Context  (Pmor_cancelr: forall {a}, Pmor _ _ #(pmon_cancelr a)).
+  Context  (Pmor_uncancelr: forall {a}, Pmor _ _ #(pmon_cancelr a)⁻¹).
   Implicit Arguments Pmor_first [[a][b][c][f]].
   Implicit Arguments Pmor_second [[a][b][c][f]].
 
-  Definition PreMonoidalSubCategory_bobj (x y:S) :=
-    existT Pobj _ (Pobj_closed (projT2 x) (projT2 y)).
-
-  Definition PreMonoidalSubCategory_first_fmor (a:S) : forall {x}{y}(f:x~~{S}~~>y),
-    (PreMonoidalSubCategory_bobj x a)~~{S}~~>(PreMonoidalSubCategory_bobj y a).
+  Definition PreMonoidalWideSubcategory_first_fmor (a:S) : forall {x}{y}(f:x~~{S}~~>y), (bin_obj' x a)~~{S}~~>(bin_obj' y a).
     unfold hom; simpl; intros.
     destruct f.
-    destruct a as [a apf].
-    destruct x as [x xpf].
-    destruct y as [y ypf].
     simpl in *.
-    exists (x0 ⋉ a).
+    exists (bin_first(BinoidalCat:=pm) a \ x0).
     apply Pmor_first; auto.
     Defined.
 
-  Definition PreMonoidalSubCategory_second_fmor (a:S) : forall {x}{y}(f:x~~{S}~~>y),
-    (PreMonoidalSubCategory_bobj a x)~~{S}~~>(PreMonoidalSubCategory_bobj a y).
+  Definition PreMonoidalWideSubcategory_second_fmor (a:S) : forall {x}{y}(f:x~~{S}~~>y), (bin_obj' a x)~~{S}~~>(bin_obj' a y).
     unfold hom; simpl; intros.
     destruct f.
+    simpl in *.
+    exists (bin_second(BinoidalCat:=pm) a \ x0).
+    apply Pmor_second; auto.
+    Defined.
+
+  Instance PreMonoidalWideSubcategory_first (a:S) : Functor S S (fun x => bin_obj' x a) :=
+    { fmor := fun x y f => PreMonoidalWideSubcategory_first_fmor a f }.
+    unfold PreMonoidalWideSubcategory_first_fmor; intros; destruct f; destruct f'; simpl in *.
+    apply (fmor_respects (bin_first(BinoidalCat:=pm) a)); auto.
+    unfold PreMonoidalWideSubcategory_first_fmor; intros; simpl in *.
+    apply (fmor_preserves_id (bin_first(BinoidalCat:=pm) a)); auto.
+    unfold PreMonoidalWideSubcategory_first_fmor; intros; destruct f; destruct g; simpl in *.
+    apply (fmor_preserves_comp (bin_first(BinoidalCat:=pm) a)); auto.
+    Defined.
+
+  Instance PreMonoidalWideSubcategory_second (a:S) : Functor S S (fun x => bin_obj' a x) :=
+    { fmor := fun x y f => PreMonoidalWideSubcategory_second_fmor a f }.
+    unfold PreMonoidalWideSubcategory_second_fmor; intros; destruct f; destruct f'; simpl in *.
+    apply (fmor_respects (bin_second(BinoidalCat:=pm) a)); auto.
+    unfold PreMonoidalWideSubcategory_second_fmor; intros; simpl in *.
+    apply (fmor_preserves_id (bin_second(BinoidalCat:=pm) a)); auto.
+    unfold PreMonoidalWideSubcategory_second_fmor; intros; destruct f; destruct g; simpl in *.
+    apply (fmor_preserves_comp (bin_second(BinoidalCat:=pm) a)); auto.
+    Defined.
+
+  Instance PreMonoidalWideSubcategory_is_Binoidal : BinoidalCat S bin_obj' :=
+    { bin_first  := PreMonoidalWideSubcategory_first
+    ; bin_second := PreMonoidalWideSubcategory_second }.
+
+  Definition PreMonoidalWideSubcategory_assoc_iso
+    : forall a b c, Isomorphic(C:=S) (bin_obj' (bin_obj' a b) c) (bin_obj' a (bin_obj' b c)).
+    intros.
+    refine {| iso_forward := existT _ _ (Pmor_assoc a b c) ; iso_backward := existT _ _ (Pmor_unassoc a b c) |}.
+    simpl; apply iso_comp1.
+    simpl; apply iso_comp2.
+    Defined.
+
+  Definition PreMonoidalWideSubcategory_assoc
+    : forall a b,
+      (PreMonoidalWideSubcategory_second a >>>> PreMonoidalWideSubcategory_first b) <~~~>
+      (PreMonoidalWideSubcategory_first  b >>>> PreMonoidalWideSubcategory_second a).
+    intros.
+    apply (@Build_NaturalIsomorphism _ _ _ _ _ _ _ _ (PreMonoidalWideSubcategory_second a >>>>
+      PreMonoidalWideSubcategory_first b) (PreMonoidalWideSubcategory_first b >>>>
+        PreMonoidalWideSubcategory_second a) (fun c => PreMonoidalWideSubcategory_assoc_iso a c b)).
+    intros; simpl.
+    unfold PreMonoidalWideSubcategory_second_fmor; simpl.
+    destruct f; simpl.
+    set (ni_commutes (pmon_assoc(PreMonoidalCat:=pm) a b) x) as q.
+    apply q.
+    Defined.
+
+  Definition PreMonoidalWideSubcategory_assoc_ll
+    : forall a b,
+      PreMonoidalWideSubcategory_second (a⊗b) <~~~>
+      PreMonoidalWideSubcategory_second b >>>> PreMonoidalWideSubcategory_second a.
+    intros.
+    apply (@Build_NaturalIsomorphism _ _ _ _ _ _ _ _
+             (PreMonoidalWideSubcategory_second (a⊗b))
+             (PreMonoidalWideSubcategory_second b >>>> PreMonoidalWideSubcategory_second a)
+             (fun c => PreMonoidalWideSubcategory_assoc_iso a b c)).
+    intros; simpl.
+    unfold PreMonoidalWideSubcategory_second_fmor; simpl.
+    destruct f; simpl.
+    set (ni_commutes (pmon_assoc_ll(PreMonoidalCat:=pm) a b) x) as q.
+    unfold functor_comp in q; simpl in q.
+    set (pmon_coherent_l(PreMonoidalCat:=pm)) as q'.
+    setoid_rewrite q' in q.
+    apply q.
+    Defined.
+
+  Definition PreMonoidalWideSubcategory_assoc_rr
+    : forall a b,
+      PreMonoidalWideSubcategory_first (a⊗b) <~~~>
+      PreMonoidalWideSubcategory_first a >>>> PreMonoidalWideSubcategory_first b.
+    intros.
+    apply ni_inv.
+    apply (@Build_NaturalIsomorphism _ _ _ _ _ _ _ _
+             (PreMonoidalWideSubcategory_first a >>>> PreMonoidalWideSubcategory_first b)
+             (PreMonoidalWideSubcategory_first (a⊗b))
+             (fun c => PreMonoidalWideSubcategory_assoc_iso c a b)).
+    intros; simpl.
+    unfold PreMonoidalWideSubcategory_second_fmor; simpl.
+    destruct f; simpl.
+    set (ni_commutes (pmon_assoc_rr(PreMonoidalCat:=pm) a b) x) as q.
+    unfold functor_comp in q; simpl in q.
+    set (pmon_coherent_r(PreMonoidalCat:=pm)) as q'.
+    setoid_rewrite q' in q.
+    apply iso_shift_right' in q.
+    apply iso_shift_left.
+    symmetry.
+    setoid_rewrite iso_inv_inv in q.
+    setoid_rewrite associativity.
+    apply q.
+    Defined.
+
+  Definition PreMonoidalWideSubcategory_cancelr_iso : forall a, Isomorphic(C:=S) (bin_obj' a pmI) a.
+    intros.
+    refine {| iso_forward := existT _ _ (Pmor_cancelr a) ; iso_backward := existT _ _ (Pmor_uncancelr a) |}.
+    simpl; apply iso_comp1.
+    simpl; apply iso_comp2.
+    Defined.
+
+  Definition PreMonoidalWideSubcategory_cancell_iso : forall a, Isomorphic(C:=S) (bin_obj' pmI a) a.
+    intros.
+    refine {| iso_forward := existT _ _ (Pmor_cancell a) ; iso_backward := existT _ _ (Pmor_uncancell a) |}.
+    simpl; apply iso_comp1.
+    simpl; apply iso_comp2.
+    Defined.
+
+  Definition PreMonoidalWideSubcategory_cancelr : PreMonoidalWideSubcategory_first pmI <~~~> functor_id _.
+    apply (@Build_NaturalIsomorphism _ _ _ _ _ _ _ _
+             (PreMonoidalWideSubcategory_first pmI) (functor_id _) PreMonoidalWideSubcategory_cancelr_iso).
+    intros; simpl.
+    unfold PreMonoidalWideSubcategory_first_fmor; simpl.
+    destruct f; simpl.
+    apply (ni_commutes (pmon_cancelr(PreMonoidalCat:=pm)) x).
+    Defined.
+
+  Definition PreMonoidalWideSubcategory_cancell : PreMonoidalWideSubcategory_second pmI <~~~> functor_id _.
+    apply (@Build_NaturalIsomorphism _ _ _ _ _ _ _ _
+             (PreMonoidalWideSubcategory_second pmI) (functor_id _) PreMonoidalWideSubcategory_cancell_iso).
+    intros; simpl.
+    unfold PreMonoidalWideSubcategory_second_fmor; simpl.
+    destruct f; simpl.
+    apply (ni_commutes (pmon_cancell(PreMonoidalCat:=pm)) x).
+    Defined.
+
+  Instance PreMonoidalWideSubcategory_PreMonoidal : PreMonoidalCat PreMonoidalWideSubcategory_is_Binoidal pmI :=
+  { pmon_assoc           := PreMonoidalWideSubcategory_assoc 
+  ; pmon_assoc_rr        := PreMonoidalWideSubcategory_assoc_rr
+  ; pmon_assoc_ll        := PreMonoidalWideSubcategory_assoc_ll
+  ; pmon_cancelr         := PreMonoidalWideSubcategory_cancelr
+  ; pmon_cancell         := PreMonoidalWideSubcategory_cancell
+  }.
+  apply Build_Pentagon.
+    intros; unfold PreMonoidalWideSubcategory_assoc; simpl.
+    set (pmon_pentagon(PreMonoidalCat:=pm) a b c) as q.
+    simpl in q.
+    apply q.
+  apply Build_Triangle.
+    intros; unfold PreMonoidalWideSubcategory_assoc;
+      unfold PreMonoidalWideSubcategory_cancelr; unfold PreMonoidalWideSubcategory_cancell; simpl.
+    set (pmon_triangle(PreMonoidalCat:=pm) a b) as q.
+    simpl in q.
+    apply q.
+    intros.
+
+  set (pmon_triangle(PreMonoidalCat:=pm)) as q.
+    apply q.
+
+  intros; simpl; reflexivity.
+  intros; simpl; reflexivity.
+
+  intros; simpl.
+    apply Build_CentralMorphism; intros; simpl; destruct g; simpl.
+    apply (pmon_assoc_central(PreMonoidalCat:=pm) a b c).
+    apply (pmon_assoc_central(PreMonoidalCat:=pm) a b c).
+
+  intros; simpl.
+    apply Build_CentralMorphism; intros; simpl; destruct g; simpl.
+    apply (pmon_cancelr_central(PreMonoidalCat:=pm) a).
+    apply (pmon_cancelr_central(PreMonoidalCat:=pm) a).
+
+  intros; simpl.
+    apply Build_CentralMorphism; intros; simpl; destruct g; simpl.
+    apply (pmon_cancell_central(PreMonoidalCat:=pm) a).
+    apply (pmon_cancell_central(PreMonoidalCat:=pm) a).
+    Defined.
+
+End PreMonoidalWideSubcategory.
+
+
+(* a full subcategory inherits the premonoidal structure if it includes the unit object and is closed under object-pairing *)
+(*
+Section PreMonoidalFullSubcategory.
+
+  Context `(pm:PreMonoidalCat(I:=pmI)).
+  Context  {Pobj}(S:FullSubcategory pm Pobj).
+  Context  (Pobj_unit:Pobj pmI).
+  Context  (Pobj_closed:forall {a}{b}, Pobj a -> Pobj b -> Pobj (a⊗b)).
+  Implicit Arguments Pobj_closed [[a][b]].
+
+  Definition PreMonoidalFullSubcategory_bobj (x y:S) :=
+    existT Pobj _ (Pobj_closed (projT2 x) (projT2 y)).
+
+  Definition PreMonoidalFullSubcategory_first_fmor (a:S) : forall {x}{y}(f:x~~{S}~~>y),
+    (PreMonoidalFullSubcategory_bobj x a)~~{S}~~>(PreMonoidalFullSubcategory_bobj y a).
+    unfold hom; simpl; intros.
     destruct a as [a apf].
     destruct x as [x xpf].
     destruct y as [y ypf].
     simpl in *.
-    exists (a ⋊ x0).
-    apply Pmor_second; auto.
+    apply (f ⋉ a).
     Defined.
 
-  Instance PreMonoidalSubCategory_first (a:S)
-    : Functor (S) (S) (fun x => PreMonoidalSubCategory_bobj x a) :=
-    { fmor := fun x y f => PreMonoidalSubCategory_first_fmor a f }.
-    unfold PreMonoidalSubCategory_first_fmor; intros; destruct a; destruct a0; destruct b; destruct f; destruct f'; simpl in *.
+  Definition PreMonoidalFullSubcategory_second_fmor (a:S) : forall {x}{y}(f:x~~{S}~~>y),
+    (PreMonoidalFullSubcategory_bobj a x)~~{S}~~>(PreMonoidalFullSubcategory_bobj a y).
+    unfold hom; simpl; intros.
+    destruct a as [a apf].
+    destruct x as [x xpf].
+    destruct y as [y ypf].
+    simpl in *.
+    apply (a ⋊ f).
+    Defined.
+
+  Instance PreMonoidalFullSubcategory_first (a:S)
+    : Functor S S (fun x => PreMonoidalFullSubcategory_bobj x a) :=
+    { fmor := fun x y f => PreMonoidalFullSubcategory_first_fmor a f }.
+    unfold PreMonoidalFullSubcategory_first_fmor; intros; destruct a; destruct a0; destruct b; simpl in *.
     apply (fmor_respects (-⋉x)); auto.
-    unfold PreMonoidalSubCategory_first_fmor; intros; destruct a; destruct a0;  simpl in *.
+    unfold PreMonoidalFullSubcategory_first_fmor; intros; destruct a; destruct a0;  simpl in *.
     apply (fmor_preserves_id (-⋉x)); auto.
-    unfold PreMonoidalSubCategory_first_fmor; intros;
-      destruct a; destruct a0; destruct b; destruct c; destruct f; destruct g; simpl in *.
+    unfold PreMonoidalFullSubcategory_first_fmor; intros;
+      destruct a; destruct a0; destruct b; destruct c; simpl in *.
     apply (fmor_preserves_comp (-⋉x)); auto.
     Defined.
 
-  Instance PreMonoidalSubCategory_second (a:S)
-    : Functor (S) (S) (fun x => PreMonoidalSubCategory_bobj a x) :=
-    { fmor := fun x y f => PreMonoidalSubCategory_second_fmor a f }.
-    unfold PreMonoidalSubCategory_second_fmor; intros; destruct a; destruct a0; destruct b; destruct f; destruct f'; simpl in *.
+  Instance PreMonoidalFullSubcategory_second (a:S)
+    : Functor S S (fun x => PreMonoidalFullSubcategory_bobj a x) :=
+    { fmor := fun x y f => PreMonoidalFullSubcategory_second_fmor a f }.
+    unfold PreMonoidalFullSubcategory_second_fmor; intros; destruct a; destruct a0; destruct b; simpl in *.
     apply (fmor_respects (x⋊-)); auto.
-    unfold PreMonoidalSubCategory_second_fmor; intros; destruct a; destruct a0;  simpl in *.
+    unfold PreMonoidalFullSubcategory_second_fmor; intros; destruct a; destruct a0;  simpl in *.
     apply (fmor_preserves_id (x⋊-)); auto.
-    unfold PreMonoidalSubCategory_second_fmor; intros;
-      destruct a; destruct a0; destruct b; destruct c; destruct f; destruct g; simpl in *.
+    unfold PreMonoidalFullSubcategory_second_fmor; intros;
+      destruct a; destruct a0; destruct b; destruct c; simpl in *.
     apply (fmor_preserves_comp (x⋊-)); auto.
     Defined.
 
-  Instance PreMonoidalSubCategory_is_Binoidal : BinoidalCat S PreMonoidalSubCategory_bobj :=
-    { bin_first := PreMonoidalSubCategory_first
-    ; bin_second := PreMonoidalSubCategory_second }.
+  Instance PreMonoidalFullSubcategory_is_Binoidal : BinoidalCat S PreMonoidalFullSubcategory_bobj :=
+    { bin_first := PreMonoidalFullSubcategory_first
+    ; bin_second := PreMonoidalFullSubcategory_second }.
 
-  Definition PreMonoidalSubCategory_assoc
+  Definition PreMonoidalFullSubcategory_assoc
     : forall a b,
-      (PreMonoidalSubCategory_second a >>>> PreMonoidalSubCategory_first b) <~~~>
-      (PreMonoidalSubCategory_first  b >>>> PreMonoidalSubCategory_second a).
-    admit.
+      (PreMonoidalFullSubcategory_second a >>>> PreMonoidalFullSubcategory_first b) <~~~>
+      (PreMonoidalFullSubcategory_first  b >>>> PreMonoidalFullSubcategory_second a).
     Defined.
 
-  Definition PreMonoidalSubCategory_assoc_ll
+  Definition PreMonoidalFullSubcategory_assoc_ll
     : forall a b,
-      PreMonoidalSubCategory_second (a⊗b) <~~~>
-      PreMonoidalSubCategory_second b >>>> PreMonoidalSubCategory_second a.
+      PreMonoidalFullSubcategory_second (a⊗b) <~~~>
+      PreMonoidalFullSubcategory_second b >>>> PreMonoidalFullSubcategory_second a.
     intros.
-    admit.
     Defined.
 
-  Definition PreMonoidalSubCategory_assoc_rr
+  Definition PreMonoidalFullSubcategory_assoc_rr
     : forall a b,
-      PreMonoidalSubCategory_first (a⊗b) <~~~>
-      PreMonoidalSubCategory_first a >>>> PreMonoidalSubCategory_first b.
+      PreMonoidalFullSubcategory_first (a⊗b) <~~~>
+      PreMonoidalFullSubcategory_first a >>>> PreMonoidalFullSubcategory_first b.
     intros.
-    admit.
     Defined.
 
-  Definition PreMonoidalSubCategory_I := existT _ pmI (Pobj_unit).
+  Definition PreMonoidalFullSubcategory_I := existT _ pmI Pobj_unit.
 
-  Definition PreMonoidalSubCategory_cancelr : PreMonoidalSubCategory_first PreMonoidalSubCategory_I <~~~> functor_id _.
-    admit.
+  Definition PreMonoidalFullSubcategory_cancelr
+    : PreMonoidalFullSubcategory_first PreMonoidalFullSubcategory_I <~~~> functor_id _.
     Defined.
 
-  Definition PreMonoidalSubCategory_cancell : PreMonoidalSubCategory_second PreMonoidalSubCategory_I <~~~> functor_id _.
-    admit.
+  Definition PreMonoidalFullSubcategory_cancell
+    : PreMonoidalFullSubcategory_second PreMonoidalFullSubcategory_I <~~~> functor_id _.
     Defined.
 
-  Instance PreMonoidalSubCategory_PreMonoidal : PreMonoidalCat PreMonoidalSubCategory_is_Binoidal PreMonoidalSubCategory_I :=
-  { pmon_assoc           := PreMonoidalSubCategory_assoc 
-  ; pmon_assoc_rr        := PreMonoidalSubCategory_assoc_rr
-  ; pmon_assoc_ll        := PreMonoidalSubCategory_assoc_ll
-  ; pmon_cancelr         := PreMonoidalSubCategory_cancelr
-  ; pmon_cancell         := PreMonoidalSubCategory_cancell
+  Instance PreMonoidalFullSubcategory_PreMonoidal
+    : PreMonoidalCat PreMonoidalFullSubcategory_is_Binoidal PreMonoidalFullSubcategory_I :=
+  { pmon_assoc           := PreMonoidalFullSubcategory_assoc 
+  ; pmon_assoc_rr        := PreMonoidalFullSubcategory_assoc_rr
+  ; pmon_assoc_ll        := PreMonoidalFullSubcategory_assoc_ll
+  ; pmon_cancelr         := PreMonoidalFullSubcategory_cancelr
+  ; pmon_cancell         := PreMonoidalFullSubcategory_cancell
   }.
-  admit.
-  admit.
-  admit.
-  admit.
-  admit.
-  admit.
-  admit.
   Defined.
-
-End PreMonoidalSubCategory.
+End PreMonoidalFullSubcategory.
+*)

@@ -45,7 +45,7 @@ Definition iso_id `{C:Category}(A:C) : Isomorphic A A.
   Defined.
 
 (* the composition of two isomorphisms is an isomorphism *)
-Definition id_comp `{C:Category}{a b c:C}(i1:Isomorphic a b)(i2:Isomorphic b c) : Isomorphic a c.
+Definition iso_comp `{C:Category}{a b c:C}(i1:Isomorphic a b)(i2:Isomorphic b c) : Isomorphic a c.
   intros; apply (@Build_Isomorphic _ _ C a c (#i1 >>> #i2) (#i2⁻¹ >>> #i1⁻¹));
     setoid_rewrite juggle3;
     [ setoid_rewrite (iso_comp1 i2) | setoid_rewrite (iso_comp2 i1) ];

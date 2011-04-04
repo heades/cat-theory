@@ -69,7 +69,7 @@ Definition ni_comp `{C:Category}`{D:Category}
    intros.
      destruct N1 as [ ni_iso1 ni_commutes1 ].
      destruct N2 as [ ni_iso2 ni_commutes2 ].
-   exists (fun A => id_comp (ni_iso1 A) (ni_iso2 A)).
+   exists (fun A => iso_comp (ni_iso1 A) (ni_iso2 A)).
    abstract (intros; simpl;
              setoid_rewrite <- associativity;
              setoid_rewrite <- ni_commutes1;
@@ -79,18 +79,19 @@ Definition ni_comp `{C:Category}`{D:Category}
    Defined.
 
 Definition ni_respects
-  `{A:Category}`{B:Category}`{C:Category}
-  {F0obj}{F0:Functor A B F0obj}
-  {F1obj}{F1:Functor A B F1obj}
-  {G0obj}{G0:Functor B C G0obj}
-  {G1obj}{G1:Functor B C G1obj}
+  `{A:Category}`{B:Category}
+  {F0obj}(F0:Functor A B F0obj)
+  {F1obj}(F1:Functor A B F1obj)
+  `{C:Category}
+  {G0obj}(G0:Functor B C G0obj)
+  {G1obj}(G1:Functor B C G1obj)
   : (F0 <~~~> F1) -> (G0 <~~~> G1) -> ((F0 >>>> G0) <~~~> (F1 >>>> G1)).
   intro phi.
   intro psi.
   destruct psi as [ psi_niso psi_comm ].
   destruct phi as [ phi_niso phi_comm ].
   refine {| ni_iso :=
-      (fun a => id_comp ((@functors_preserve_isos _ _ _ _ _ _ _ G0) _ _ (phi_niso a)) (psi_niso (F1obj a))) |}.
+      (fun a => iso_comp ((@functors_preserve_isos _ _ _ _ _ _ _ G0) _ _ (phi_niso a)) (psi_niso (F1obj a))) |}.
   abstract (intros; simpl;
             setoid_rewrite <- associativity;
             setoid_rewrite fmor_preserves_comp;
@@ -159,7 +160,7 @@ Definition if_comp `{C:Category}`{D:Category}
    intros.
      destruct N1 as [ ni_iso1 ni_commutes1 ].
      destruct N2 as [ ni_iso2 ni_commutes2 ].
-   exists (fun A => id_comp (ni_iso1 A) (ni_iso2 A)).
+   exists (fun A => iso_comp (ni_iso1 A) (ni_iso2 A)).
    abstract (intros; simpl;
              setoid_rewrite <- associativity;
              setoid_rewrite <- ni_commutes1;
@@ -201,17 +202,18 @@ Definition if_right_identity `{C1:Category}`{C2:Category} {Fobj1}(F1:Functor C1 
   Defined.
 
 Definition if_respects
-  `{A:Category}`{B:Category}`{C:Category}
-  {F0obj}{F0:Functor A B F0obj}
-  {F1obj}{F1:Functor A B F1obj}
-  {G0obj}{G0:Functor B C G0obj}
-  {G1obj}{G1:Functor B C G1obj}
+  `{A:Category}`{B:Category}
+  {F0obj}(F0:Functor A B F0obj)
+  {F1obj}(F1:Functor A B F1obj)
+  `{C:Category}
+  {G0obj}(G0:Functor B C G0obj)
+  {G1obj}(G1:Functor B C G1obj)
   : (F0 ≃ F1) -> (G0 ≃ G1) -> ((F0 >>>> G0) ≃ (F1 >>>> G1)).
   intro phi.
   intro psi.
   destruct psi as [ psi_niso psi_comm ].
   destruct phi as [ phi_niso phi_comm ].
-  exists (fun a => id_comp ((@functors_preserve_isos _ _ _ _ _ _ _ G0) _ _ (phi_niso a)) (psi_niso (F1obj a))).
+  exists (fun a => iso_comp ((@functors_preserve_isos _ _ _ _ _ _ _ G0) _ _ (phi_niso a)) (psi_niso (F1obj a))).
   abstract (intros; simpl;
             setoid_rewrite <- associativity;
             setoid_rewrite fmor_preserves_comp;
@@ -227,11 +229,11 @@ Require Import ProductCategories_ch1_6_1.
   Context
   `{C1:Category}`{C2:Category}
   `{D1:Category}`{D2:Category}
-   {F1Obj}{F1:@Functor _ _ C1 _ _ D1 F1Obj}
-   {F2Obj}{F2:@Functor _ _ C2 _ _ D2 F2Obj}
+   {F1Obj}(F1:@Functor _ _ C1 _ _ D1 F1Obj)
+   {F2Obj}(F2:@Functor _ _ C2 _ _ D2 F2Obj)
   `{E1:Category}`{E2:Category}
-   {G1Obj}{G1:@Functor _ _ D1 _ _ E1 G1Obj}
-   {G2Obj}{G2:@Functor _ _ D2 _ _ E2 G2Obj}.
+   {G1Obj}(G1:@Functor _ _ D1 _ _ E1 G1Obj)
+   {G2Obj}(G2:@Functor _ _ D2 _ _ E2 G2Obj).
 
   Definition ni_prod_comp_iso A : (((F1 >>>> G1) **** (F2 >>>> G2)) A) ≅ (((F1 **** F2) >>>> (G1 **** G2)) A).
     unfold functor_fobj.

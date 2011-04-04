@@ -11,38 +11,64 @@ Require Import OppositeCategories_ch1_6_2.
 Require Import NaturalTransformations_ch7_4.
 Require Import NaturalIsomorphisms_ch7_5.
 
-(* Any morphism-predicate which is closed under composition and
- * passing to identity morphisms (of either the domain or codomain)
- *
- * We could recycle the "predicate on morphisms" to determine the
- * "predicate on objects", but this causes technical difficulties with
- * Coq *)
-Class SubCategory `(C:Category Ob Hom)(Pobj:Ob->Type)(Pmor:forall a b:Ob, Pobj a -> Pobj b -> (a~>b) ->Type) : Type :=
-{ sc_id_included    : forall (a:Ob)(pa:Pobj a), Pmor _ _ pa pa (id a)
-; sc_comp_included  : forall (a b c:Ob)(pa:Pobj a)(pb:Pobj b)(pc:Pobj c) f g,
-                        (Pmor _ _ pa pb f) -> (Pmor _ _ pb pc g) -> (Pmor _ _ pa pc (f>>>g))
+(*
+ * See the README for an explanation of why there is "WideSubcategory"
+ * and "FullSubcategory" but no "Subcategory"
+ *)
+
+(* a full subcategory requires nothing more than a predicate on objects *)
+Class FullSubcategory `(C:Category)(Pobj:C->Type) := { }.
+
+(* the category construction for full subcategories is simpler: *)
+Instance FullSubCategoriesAreCategories `(fsc:@FullSubcategory Ob Hom C Pobj)
+  : Category (sigT Pobj) (fun dom ran => (projT1 dom)~~{C}~~>(projT1 ran)) :=
+{ id   := fun t         => id (projT1 t)
+; eqv  := fun a b f g   => eqv _ _ f g
+; comp := fun a b c f g => f >>> g
 }.
+  intros; apply Build_Equivalence. unfold Reflexive.
+     intros; reflexivity.
+     unfold Symmetric; intros; simpl; symmetry; auto.
+     unfold Transitive; intros; simpl. transitivity y; auto.
+  intros; unfold Proper. unfold respectful. intros. simpl. apply comp_respects. auto. auto.
+  intros; simpl. apply left_identity.
+  intros; simpl. apply right_identity.
+  intros; simpl. apply associativity.
+  Defined.
+Coercion FullSubCategoriesAreCategories : FullSubcategory >-> Category.
 
 (* every category is a subcategory of itself! *)
+(*
 Instance IdentitySubCategory `(C:Category Ob Hom) : SubCategory C (fun _ => True) (fun _ _ _ _ _ => True).
   intros; apply Build_SubCategory.
   intros; auto.
   intros; auto.
   Defined.
-
-(* a full subcategory requires nothing more than a predicate on objects *)
-Definition FullSubcategory `(C:Category)(Pobj:C->Type) : SubCategory C Pobj (fun _ _ _ _ _ => True).
-  apply Build_SubCategory; intros; auto.
+(* the inclusion operation from a subcategory to its host is a functor *)
+Instance InclusionFunctor `(C:Category Ob Hom)`(SP:@SubCategory _ _ C Pobj Pmor)
+  : Functor SP C (fun x => projT1 x) :=
+  { fmor := fun dom ran f => projT1 f }.
+  intros. unfold eqv in H. simpl in H. auto.
+  intros. simpl. reflexivity.
+  intros. simpl. reflexivity.
   Defined.
+*)
 
-Section SubCategoriesAreCategories.
-  (* Any such predicate determines a category *)
-  Instance SubCategoriesAreCategories `(C:Category Ob Hom)`(SP:@SubCategory _ _ C Pobj Pmor)
-    : Category (sigT Pobj) (fun dom ran => sigT (fun f => Pmor (projT1 dom) (projT1 ran) (projT2 dom) (projT2 ran) f)) :=
-  { id   := fun t         => existT (fun f => Pmor _ _ _ _ f) (id (projT1 t)) (sc_id_included _ (projT2 t))
+
+(* a wide subcategory includes all objects, so it requires nothing more than a predicate on each hom-set *)
+Class WideSubcategory `(C:Category Ob Hom)(Pmor:forall a b:Ob, (a~>b) ->Type) : Type :=
+{ wsc_id_included    : forall (a:Ob), Pmor a a (id a)
+; wsc_comp_included  : forall (a b c:Ob) f g, (Pmor a b f) -> (Pmor b c g) -> (Pmor a c (f>>>g))
+}.
+
+(* the category construction for full subcategories is simpler: *)
+Instance WideSubCategoriesAreCategories `{C:Category(Ob:=Ob)}{Pmor}(wsc:WideSubcategory C Pmor)
+  : Category Ob (fun x y => sigT (Pmor x y)) :=
+  { id   := fun t         => existT _ (id t) (@wsc_id_included _ _ _ _ wsc t)
   ; eqv  := fun a b f g   => eqv _ _ (projT1 f) (projT1 g)
-  ; comp := fun a b c f g => existT (fun f => Pmor _ _ _ _ f) (projT1 f >>> projT1 g)
-                                    (sc_comp_included _ _ _ (projT2 a) (projT2 b) (projT2 c) _ _ (projT2 f) (projT2 g))
+  ; comp := fun a b c f g => existT (Pmor a c) (projT1 f >>> projT1 g)
+                                    (@wsc_comp_included _ _ _ _ wsc _ _ _ _ _ (projT2 f) (projT2 g))
+
   }.
   intros; apply Build_Equivalence. unfold Reflexive.
      intros; reflexivity.
@@ -53,47 +79,51 @@ Section SubCategoriesAreCategories.
   intros; simpl. apply right_identity.
   intros; simpl. apply associativity.
   Defined.
-End SubCategoriesAreCategories.
-Coercion SubCategoriesAreCategories : SubCategory >-> Category.
+Coercion WideSubCategoriesAreCategories : WideSubcategory >-> Category.
 
-(* the inclusion operation from a subcategory to its host is a functor *)
-Instance InclusionFunctor `(C:Category Ob Hom)`(SP:@SubCategory _ _ C Pobj Pmor)
-  : Functor SP C (fun x => projT1 x) :=
-  { fmor := fun dom ran f => projT1 f }.
-  intros. unfold eqv in H. simpl in H. auto.
-  intros. simpl. reflexivity.
-  intros. simpl. reflexivity.
+(* the full image of a functor is a full subcategory *)
+Section FullImage.
+
+  Context `(F:Functor(c1:=C)(c2:=D)).
+
+  Instance FullImage : Category C (fun x y => (F x)~~{D}~~>(F y)) :=
+  { id    := fun t         => id (F t)
+  ; eqv   := fun x y   f g => eqv(Category:=D)  _ _ f g
+  ; comp  := fun x y z f g => comp(Category:=D) _ _ _ f g
+  }.
+  intros; apply Build_Equivalence. unfold Reflexive.
+     intros; reflexivity.
+     unfold Symmetric; intros; simpl; symmetry; auto.
+     unfold Transitive; intros; simpl. transitivity y; auto.
+  intros; unfold Proper. unfold respectful. intros. simpl. apply comp_respects. auto. auto.
+  intros; simpl. apply left_identity.
+  intros; simpl. apply right_identity.
+  intros; simpl. apply associativity.
   Defined.
 
-Definition FullImage `(F:Functor(c1:=C)(c2:=D)(fobj:=Fobj)) := FullSubcategory D (fun d => { c:C & (Fobj c)=d }).
+  Instance FullImage_InclusionFunctor : Functor FullImage D (fun x => F x) :=
+    { fmor := fun x y f => f }.
+    intros; auto.
+    intros; simpl; reflexivity.
+    intros; simpl; reflexivity.
+    Defined.
 
-(* any functor may be restricted to its image *)
-Section RestrictToImage.
-  Context `(F:Functor(c1:=C)(c2:=D)(fobj:=Fobj)).
-  Definition RestrictToImage_fobj : C -> FullImage F.
-    intros.
-    exists (F X).
-    exists X.
-    reflexivity.
-    Defined.
-  Definition RestrictToImage_fmor a b (f:a~>b) : (RestrictToImage_fobj a)~~{FullImage F}~~>(RestrictToImage_fobj b).
-    exists (F \ f); auto.
-    Defined.
-  Instance RestrictToImage : Functor C (FullImage F) RestrictToImage_fobj :=
-    { fmor := fun a b f => RestrictToImage_fmor a b f }.
+  Instance RestrictToImage : Functor C FullImage (fun x => x) :=
+    { fmor := fun a b f => F \ f }.
     intros; simpl; apply fmor_respects; auto.
     intros; simpl; apply fmor_preserves_id; auto.
     intros; simpl; apply fmor_preserves_comp; auto.
     Defined.
-  Lemma RestrictToImage_splits : F ≃ (RestrictToImage >>>> InclusionFunctor _ _).
-    exists (fun A => iso_id (F A)).
-    intros; simpl.
-    setoid_rewrite left_identity.
-    setoid_rewrite right_identity.
-    reflexivity.
-    Qed.
-End RestrictToImage.
 
+  Lemma RestrictToImage_splits : F ~~~~ (RestrictToImage >>>> FullImage_InclusionFunctor).
+    unfold EqualFunctors; simpl; intros; apply heq_morphisms_intro.
+    apply fmor_respects.
+    auto.
+    Defined.
+
+End FullImage.
+
+(*
 Instance func_opSubcat `(c1:Category)`(c2:Category)`(SP:@SubCategory _ _ c2 Pobj Pmor)
   {fobj}(F:Functor c1⁽ºᑭ⁾ SP fobj) : Functor c1 SP⁽ºᑭ⁾ fobj :=
   { fmor                := fun a b f => fmor F f }.
@@ -101,7 +131,9 @@ Instance func_opSubcat `(c1:Category)`(c2:Category)`(SP:@SubCategory _ _ c2 Pobj
   intros. apply (@fmor_preserves_id _ _ _ _ _ _ _ F a).
   intros. apply (@fmor_preserves_comp _ _ _ _ _ _ _ F _ _ g _ f).
   Defined.
+*)
 
+(*
 (* if a functor's range falls within a subcategory, then it is already a functor into that subcategory *)
 Section FunctorWithRangeInSubCategory.
   Context `(Cat1:Category O1 Hom1).
@@ -160,6 +192,7 @@ Section FunctorWithRangeInSubCategory.
       *)
   End Opposite.
 End FunctorWithRangeInSubCategory.
+*)
 
 
 (* Definition 7.1: faithful functors *)
@@ -196,6 +229,7 @@ Definition WeaklyMonic
     G >>>> F ≃ H >>>> F
     -> G ≃ H.
 
+(*
 Section FullFaithfulFunctor_section.
   Context `(F:Functor(c1:=C1)(c2:=C2)(fobj:=Fobj)).
   Context  (F_full:FullFunctor F).
@@ -215,6 +249,9 @@ Section FullFaithfulFunctor_section.
 
   Definition ff_functor_section_fmor {a b:FullImage F} (f:a~~{FullImage F}~~>b)
     : (ff_functor_section_fobj a)~~{C1}~~>(ff_functor_section_fobj b).
+    destruct a as [ a1 [ a2 a3 ] ].
+    destruct b as [ b1 [ b2 b3 ] ].
+    set (@ff_invert _ _ _ _ _ _ _ _ F_full _ _ f) as f'.
     destruct a as [ a1 [ a2 a3 ] ].
     subst.
     unfold ff_functor_section_fobj.
@@ -250,8 +287,8 @@ Section FullFaithfulFunctor_section.
   Instance ff_functor_section_functor : Functor (FullImage F) C1 ff_functor_section_fobj :=
     { fmor := fun a b f => ff_functor_section_fmor f }.
     abstract (intros;
-      destruct a; destruct b; destruct s; destruct s0; destruct f; destruct f'; simpl in *;
-      subst; simpl; set (F_full x1 x2 x3) as ff1; set (F_full x1 x2 x4) as ff2; destruct ff1; destruct ff2;
+      destruct a; destruct b; destruct s; destruct s0; simpl in *;
+      subst; simpl; set (F_full x1 x2 f) as ff1; set (F_full x1 x2 f') as ff2; destruct ff1; destruct ff2;
       apply F_faithful;
       etransitivity; [ apply e | idtac ];
       symmetry;
@@ -269,8 +306,6 @@ Section FullFaithfulFunctor_section.
       destruct c as [ c1 [ c2 c3 ] ];
       subst;
       simpl in *;
-      destruct f;
-      destruct g;
       simpl in *;
       apply ff_functor_section_respectful).
       Defined.
@@ -280,10 +315,9 @@ Section FullFaithfulFunctor_section.
       FullImage F
       }~~> existT (fun d : C2, {c : C1 & Fobj c = d}) 
              (Fobj b2) (existT (fun c : C1, Fobj c = Fobj b2) b2 (eq_refl _)))
-     : F \ (let (x1, _) := F_full a2 b2 (let (x1, _) := f in x1) in x1) ~~ projT1 f.
-    destruct f.
+     : F \ (let (x1, _) := F_full a2 b2 f in x1) ~~ f.
     simpl.
-    set (F_full a2 b2 x) as qq.
+    set (F_full a2 b2 f) as qq.
     destruct qq.
     apply e.
     Qed.
@@ -296,11 +330,10 @@ Section FullFaithfulFunctor_section.
     destruct b as [ b1 [ b2 b3 ] ].
     subst.
     simpl in *.
-    inversion f; subst.
-    inversion f'; subst.
     simpl in *.
     apply heq_morphisms_intro.
     simpl.
+    unfold RestrictToImage_fmor; simpl.
     etransitivity; [ idtac | apply H ].
     clear H.
     clear f'.
@@ -327,8 +360,7 @@ Section FullFaithfulFunctor_section.
     destruct A as [ a1 [ a2 a3 ] ].
     destruct B as [ b1 [ b2 b3 ] ].
     simpl.
-    destruct f; subst.
-    simpl.
+    unfold RestrictToImage_fmor; simpl.
     setoid_rewrite left_identity.
     setoid_rewrite right_identity.
     set (F_full a2 b2 x) as qr.
@@ -427,3 +459,4 @@ Section FullFaithfulFunctor_section.
   Opaque ff_functor_section_splits_niso_helper.
 
 End FullFaithfulFunctor_section.
+*)
