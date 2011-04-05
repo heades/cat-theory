@@ -78,6 +78,35 @@ Definition ni_comp `{C:Category}`{D:Category}
              reflexivity).
    Defined.
 
+Definition ni_respects1
+  `{A:Category}`{B:Category}
+  {Fobj}(F:Functor A B Fobj)
+  `{C:Category}
+  {G0obj}(G0:Functor B C G0obj)
+  {G1obj}(G1:Functor B C G1obj)
+  : (G0 <~~~> G1) -> ((F >>>> G0) <~~~> (F >>>> G1)).
+  intro phi.
+  destruct phi as [ phi_niso phi_comm ].
+  refine {| ni_iso := (fun a => phi_niso (Fobj a)) |}.
+  intros; simpl; apply phi_comm.
+  Defined.
+
+Definition ni_respects2
+  `{A:Category}`{B:Category}
+  {F0obj}(F0:Functor A B F0obj)
+  {F1obj}(F1:Functor A B F1obj)
+  `{C:Category}
+  {Gobj}(G:Functor B C Gobj)
+  : (F0 <~~~> F1) -> ((F0 >>>> G) <~~~> (F1 >>>> G)).
+  intro phi.
+  destruct phi as [ phi_niso phi_comm ].
+  refine {| ni_iso := fun a => (@functors_preserve_isos _ _ _ _ _ _ _ G) _ _ (phi_niso a) |}.
+  intros; simpl.
+  setoid_rewrite fmor_preserves_comp.
+  apply fmor_respects.
+  apply phi_comm.
+  Defined.
+
 Definition ni_respects
   `{A:Category}`{B:Category}
   {F0obj}(F0:Functor A B F0obj)
