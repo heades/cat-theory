@@ -156,8 +156,8 @@ Class PreMonoidalFunctor
 ; mf_center     :  forall `(f:a~>b), CentralMorphism f -> CentralMorphism (mf_F \ f)
 ; mf_cancell    :  ∀ b,     #(pmon_cancell _) ~~ #mf_i ⋉ _ >>> #(mf_first  b I1) >>> mf_F \ #(pmon_cancell b)
 ; mf_cancelr    :  ∀ a,     #(pmon_cancelr _) ~~ _ ⋊ #mf_i >>> #(mf_second a I1) >>> mf_F \ #(pmon_cancelr a)
-; mf_assoc      :  ∀ a b c, #(pmon_assoc _ _ _)  >>> _ ⋊ #(mf_second _ _) >>>        #(mf_second _ _) ~~
-                            #(mf_second _ _) ⋉ _ >>>     #(mf_second _ _) >>> mf_F \ #(pmon_assoc a c b)
+; mf_assoc      :  ∀ a b c, #(pmon_assoc _ _ _)  >>> _ ⋊ #(mf_first _ _) >>>        #(mf_second _ _) ~~
+                            #(mf_second _ _) ⋉ _  >>>     #(mf_first _ _) >>> mf_F \ #(pmon_assoc a c b)
 }.
 Coercion mf_F : PreMonoidalFunctor >-> Functor.
 
@@ -188,8 +188,7 @@ Section PreMonoidalFunctorsCompose.
     eapply ni_comp.
     apply (ni_associativity PMF12 PMF23 (- ⋉fobj23 (fobj12 a))).
     eapply ni_comp.
-    apply (ni_respects PMF12 PMF12 (PMF23 >>>> - ⋉fobj23 (fobj12 a)) (- ⋉fobj12 a >>>> PMF23)).
-    apply  ni_id.
+    apply (ni_respects1 PMF12 (PMF23 >>>> - ⋉fobj23 (fobj12 a)) (- ⋉fobj12 a >>>> PMF23)).
     apply mf_first23.
     clear mf_first23.
 
@@ -202,7 +201,7 @@ Section PreMonoidalFunctorsCompose.
     eapply ni_inv.
     eapply (ni_associativity _ PMF12 PMF23).
 
-    apply ni_respects; [ idtac | apply ni_id ].
+    apply ni_respects2.
     apply ni_inv.
     apply mf_first12.
     Defined.
@@ -215,8 +214,7 @@ Section PreMonoidalFunctorsCompose.
     eapply ni_comp.
     apply (ni_associativity PMF12 PMF23 (fobj23 (fobj12 a) ⋊-)).
     eapply ni_comp.
-    apply (ni_respects PMF12 PMF12 (PMF23 >>>> fobj23 (fobj12 a) ⋊-) (fobj12 a ⋊- >>>> PMF23)).
-    apply  ni_id.
+    apply (ni_respects1 PMF12 (PMF23 >>>> fobj23 (fobj12 a) ⋊-) (fobj12 a ⋊- >>>> PMF23)).
     apply mf_second23.
     clear mf_second23.
 
@@ -229,124 +227,129 @@ Section PreMonoidalFunctorsCompose.
     eapply ni_inv.
     eapply (ni_associativity (a ⋊-) PMF12 PMF23).
 
-    apply ni_respects; [ idtac | apply ni_id ].
+    apply ni_respects2.
     apply ni_inv.
     apply mf_second12.
     Defined.
 
-  Lemma compose_assoc_coherence a b c : 
-   (#((pmon_assoc (compose_mf a) (fobj23 (fobj12 c))) (compose_mf b)) >>>
-    compose_mf a ⋊ #((compose_mf_second b) c)) >>>
+  (* this proof is really gross; I will write a better one some other day *)
+  Lemma mf_associativity_comp :
+   ∀a b c : C1,
+   (#((pmon_assoc (compose_mf a) (compose_mf c)) (fobj23 (fobj12 b))) >>>
+    compose_mf a ⋊ #((compose_mf_first c) b)) >>>
    #((compose_mf_second a) (b ⊗ c)) ~~
-   (#((compose_mf_second a) b) ⋉ fobj23 (fobj12 c) >>>
-    #((compose_mf_second (a ⊗ b)) c)) >>> compose_mf \ #((pmon_assoc a c) b).
-(*
-      set (mf_assoc a b c) as x.
-      set (mf_assoc (fobj12 a) (fobj12 b) (fobj12 c)) as x'.
-      unfold functor_fobj in *.
-      simpl in *.
-      etransitivity.
-      etransitivity.
-      etransitivity.
-      Focus 3.
-      apply x'.
-
-      apply iso_shift_left' in x'.
-
+   (#((compose_mf_second a) b) ⋉ compose_mf c >>>
+    #((compose_mf_first c) (a ⊗ b))) >>> compose_mf \ #((pmon_assoc a c) b).
+    intros; intros.
       unfold compose_mf_second; simpl.
+      unfold compose_mf_first; simpl.
+      unfold functor_comp; simpl.
+      unfold ni_respects1.
       unfold functor_fobj; simpl.
-      set (mf_second (fobj12 b)) as m.
-      assert (mf_second (fobj12 b)=m). reflexivity.
-      destruct m; simpl.
-      setoid_rewrite <- fmor_preserves_comp.
-      setoid_rewrite <- fmor_preserves_comp.
-      setoid_rewrite <- fmor_preserves_comp.
-      setoid_rewrite <- fmor_preserves_comp.
-      setoid_rewrite <- fmor_preserves_comp.
-      setoid_rewrite fmor_preserves_id.
-      setoid_rewrite fmor_preserves_id.
-      setoid_rewrite fmor_preserves_id.
-      setoid_rewrite right_identity.
-      setoid_rewrite left_identity.
-      setoid_rewrite left_identity.
-      setoid_rewrite left_identity.
-
-      set (mf_second (fobj12 (a ⊗ b))) as m''.
-      assert (mf_second (fobj12 (a ⊗ b))=m''). reflexivity.
-      destruct m''; simpl.
-      unfold functor_fobj; simpl.
-      setoid_rewrite fmor_preserves_id.
-      setoid_rewrite fmor_preserves_id.
-      setoid_rewrite right_identity.
-      setoid_rewrite left_identity.
-      setoid_rewrite left_identity.
-      setoid_rewrite left_identity.
-
-      set (mf_second (fobj12 a)) as m'.
-      assert (mf_second (fobj12 a)=m'). reflexivity.
+      
+      set (mf_first (fobj12 c)) as m'.
+      assert (mf_first (fobj12 c)=m'). reflexivity.
       destruct m'; simpl.
-      setoid_rewrite <- fmor_preserves_comp.
-      setoid_rewrite <- fmor_preserves_comp.
-      setoid_rewrite <- fmor_preserves_comp.
-      setoid_rewrite <- fmor_preserves_comp.
-      setoid_rewrite <- fmor_preserves_comp.
-      setoid_rewrite    left_identity.
-      setoid_rewrite    left_identity.
-      setoid_rewrite    left_identity.
-      setoid_rewrite    right_identity.
-      assert (fobj23 (fobj12 a) ⋊ PMF23 \ id (PMF12 (b ⊗ c)) ~~ id _).
-      (* *)
-      setoid_rewrite H2.
-      setoid_rewrite left_identity.
-      assert ((id (fobj23 (fobj12 a) ⊗ fobj23 (fobj12 b)) ⋉ fobj23 (fobj12 c)) ~~ id _).
-      (* *)
-      setoid_rewrite H3.
-      setoid_rewrite left_identity.
-      assert (id (fobj23 (fobj12 a ⊗ fobj12 b)) ⋉ fobj23 (fobj12 c) ~~ id _).
-      (* *)
-        setoid_rewrite H4.
-        setoid_rewrite left_identity.
-        clear H4.
-        setoid_rewrite left_identity.
-      assert (id (fobj23 (fobj12 (a ⊗ b))) ⋉ fobj23 (fobj12 c) ~~ id _).
-      (* *)
-        setoid_rewrite H4.
-        setoid_rewrite right_identity.
-        clear H4.
-      assert ((fobj23 (fobj12 a) ⋊ PMF23 \ id (PMF12 b)) ⋉ fobj23 (fobj12 c) ~~ id _).
-      (* *)
-        setoid_rewrite H4.
-        setoid_rewrite left_identity.
-        clear H4.
-      unfold functor_comp in ni_commutes0; simpl in ni_commutes0.
-      unfold functor_comp in ni_commutes;  simpl in ni_commutes.
-      unfold functor_comp in ni_commutes1;  simpl in ni_commutes1.
 
+      set (mf_second (fobj12 a)) as m.
+      assert (mf_second (fobj12 a)=m). reflexivity.
+      destruct m; simpl.
 
+      Implicit Arguments id [[Ob][Hom][Category][a]].
+      idtac.
+
+      symmetry.
+      etransitivity.
+      repeat setoid_rewrite <- fmor_preserves_comp.
+      repeat setoid_rewrite fmor_preserves_id.
+      repeat setoid_rewrite left_identity.
+      repeat setoid_rewrite right_identity.
+      reflexivity.
+      symmetry.
+      etransitivity.
+      repeat setoid_rewrite <- fmor_preserves_comp.
+      repeat setoid_rewrite fmor_preserves_id.
+      repeat setoid_rewrite left_identity.
+      repeat setoid_rewrite right_identity.
+      reflexivity.
+
+      assert (   (#((pmon_assoc (fobj23 (fobj12 a)) (fobj23 (fobj12 c)))
+              (fobj23 (fobj12 b))) >>>
+          fobj23 (fobj12 a)
+          ⋊ (
+             (#(ni_iso (fobj12 b)) >>> ( (PMF23 \ #((mf_first c) b) ))))) >>>
+         (
+          (#(ni_iso0 (fobj12 (b ⊗ c))) >>>
+           ((PMF23 \ #((mf_second a) (b ⊗ c)))))) ~~
+         ((
+           (#(ni_iso0 (fobj12 b)) >>> ( (PMF23 \ #((mf_second a) b) ))))
+          ⋉ fobj23 (fobj12 c) >>>
+          (
+           (#(ni_iso (fobj12 (a ⊗ b))) >>>
+            ( (PMF23 \ #((mf_first c) (a ⊗ b))))))) >>>
+         PMF23 \ (PMF12 \ #((pmon_assoc a c) b))
+      ).
+
+      repeat setoid_rewrite associativity.
+      setoid_rewrite (fmor_preserves_comp PMF23).
+            unfold functor_comp in *.
+            unfold functor_fobj in *.
+            simpl in *.
+            rename ni_commutes into ni_commutes7.
+      set (mf_assoc(PreMonoidalFunctor:=PMF12)) as q.
+      set (ni_commutes7 _ _ (#((mf_second a) b))) as q'.
+      simpl in q'.
+      repeat setoid_rewrite associativity.
+      symmetry.
+      setoid_rewrite <- (fmor_preserves_comp (-⋉ fobj23 (fobj12 c))).
+      repeat setoid_rewrite <- associativity.
+      setoid_rewrite juggle1.
+      setoid_rewrite <- q'.
+      repeat setoid_rewrite associativity.
+      setoid_rewrite fmor_preserves_comp.
+      idtac.
       unfold functor_fobj in *.
       simpl in *.
-      setoid_rewrite x in x'.
-      rewrite H1.
-      set (ni_commutes0 (a )
-      setoid_rewrite fmor_preserves_id.
-      etransitivity.
-      eapply comp_respects.
-      reflexivity.
-      eapply comp_respects.
-      eapply comp_respects.
-        apply 
-      Focus 2.
-      eapply fmor_preserves_id.
-      setoid_rewrite    (fmor_preserves_id PMF23).
-*)
-    admit.
-    Qed.
+      repeat setoid_rewrite <- associativity.
+      setoid_rewrite <- q.
+      clear q.
+      repeat setoid_rewrite <- fmor_preserves_comp.
+      repeat setoid_rewrite <- associativity.
+      apply comp_respects; try reflexivity.
+      
+      set (mf_assoc(PreMonoidalFunctor:=PMF23) (fobj12 a) (fobj12 b) (fobj12 c)) as q.
+      unfold functor_fobj in *.
+      simpl in *.
+      
+      rewrite H in q.
+      rewrite H0 in q.
+      simpl in q.
+      repeat setoid_rewrite <- associativity.
+      repeat setoid_rewrite <- associativity in q.
+      setoid_rewrite <- q.
+      clear q.
+      unfold functor_fobj; simpl.
+      
+      repeat setoid_rewrite associativity.
+      apply comp_respects; try reflexivity.
+      apply comp_respects; try reflexivity.
+      auto.
+      
+      repeat setoid_rewrite associativity.
+      repeat setoid_rewrite associativity in H1.
+      repeat setoid_rewrite <- fmor_preserves_comp in H1.
+      repeat setoid_rewrite associativity in H1.
+      apply H1.
+      Qed.
+      Implicit Arguments id [[Ob][Hom][Category]].
 
+  (* this proof is really gross; I will write a better one some other day *)
   Instance PreMonoidalFunctorsCompose : PreMonoidalFunctor PM1 PM3 (fobj23 ○ fobj12) :=
   { mf_i      := compose_mf_i
   ; mf_F      := compose_mf
   ; mf_first  := compose_mf_first  
   ; mf_second := compose_mf_second }.
+
     intros; unfold compose_mf_first; unfold compose_mf_second.
       set (mf_first (PMF12 a)) as x in *.
       set (mf_second (PMF12 b)) as y in *.
@@ -359,31 +362,12 @@ Section PreMonoidalFunctorsCompose.
       repeat setoid_rewrite right_identity.
       set (mf_consistent (PMF12 a) (PMF12 b)) as later.
       apply comp_respects; try reflexivity.
-      unfold functor_comp.
-      unfold functor_fobj; simpl.
-      set (ni_commutes _ _ (id (fobj12 b))) as x.
-      unfold functor_comp in x.
-      simpl in x.
-      unfold functor_fobj in x.
-      symmetry in x.
-      etransitivity.
-      apply x.
-      clear x.
-      set (ni_commutes0 _ _ (id (fobj12 a))) as x'.
-      unfold functor_comp in x'.
-      simpl in x'.
-      unfold functor_fobj in x'.
-      etransitivity; [ idtac | apply x' ].
-      clear x'.
-      setoid_rewrite fmor_preserves_id.
-      setoid_rewrite fmor_preserves_id.
-      setoid_rewrite right_identity.
       rewrite <- H in later.
       rewrite <- H0 in later.
       simpl in later.
       apply later.
       apply fmor_respects.
-      apply (mf_consistent a b).
+      apply mf_consistent.
 
     intros.
       simpl.
@@ -419,22 +403,13 @@ Section PreMonoidalFunctorsCompose.
       repeat setoid_rewrite associativity.
       apply comp_respects; try reflexivity.
 
-      set (ni_commutes _ _ (id (fobj12 I1))) as x.
+      set (ni_commutes _ _ #mf_i) as x.
       unfold functor_comp in x.
       unfold functor_fobj in x.
       simpl in x.
-      setoid_rewrite <- x.
-      clear x.
-      setoid_rewrite fmor_preserves_id.
-      setoid_rewrite fmor_preserves_id.
-      setoid_rewrite right_identity.
-
       rewrite H.
       simpl.
-      clear H.
-      unfold functor_comp in ni_commutes.
-      simpl in ni_commutes.
-      apply ni_commutes.
+      apply x.
 
     intros.
       unfold compose_mf_second; simpl.
@@ -464,24 +439,16 @@ Section PreMonoidalFunctorsCompose.
       repeat setoid_rewrite associativity.
       apply comp_respects; try reflexivity.
 
-      set (ni_commutes _ _ (id (fobj12 I1))) as x.
+      set (ni_commutes _ _ #mf_i) as x.
       unfold functor_comp in x.
       unfold functor_fobj in x.
       simpl in x.
-      setoid_rewrite <- x.
-      clear x.
-      setoid_rewrite fmor_preserves_id.
-      setoid_rewrite fmor_preserves_id.
-      setoid_rewrite right_identity.
-
       rewrite H.
       simpl.
-      clear H.
-      unfold functor_comp in ni_commutes.
-      simpl in ni_commutes.
-      apply ni_commutes.
+      apply x.
 
-    apply compose_assoc_coherence.
+    apply mf_associativity_comp.
+
       Defined.
 
 End PreMonoidalFunctorsCompose.
