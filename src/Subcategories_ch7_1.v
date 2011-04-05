@@ -37,7 +37,7 @@ Instance FullSubCategoriesAreCategories `(fsc:@FullSubcategory Ob Hom C Pobj)
   Defined.
 Coercion FullSubCategoriesAreCategories : FullSubcategory >-> Category.
 
-(* every category is a subcategory of itself! *)
+(* every category is a subcategory of itself *)
 (*
 Instance IdentitySubCategory `(C:Category Ob Hom) : SubCategory C (fun _ => True) (fun _ _ _ _ _ => True).
   intros; apply Build_SubCategory.
@@ -68,7 +68,6 @@ Instance WideSubCategoriesAreCategories `{C:Category(Ob:=Ob)}{Pmor}(wsc:WideSubc
   ; eqv  := fun a b f g   => eqv _ _ (projT1 f) (projT1 g)
   ; comp := fun a b c f g => existT (Pmor a c) (projT1 f >>> projT1 g)
                                     (@wsc_comp_included _ _ _ _ wsc _ _ _ _ _ (projT2 f) (projT2 g))
-
   }.
   intros; apply Build_Equivalence. unfold Reflexive.
      intros; reflexivity.
@@ -211,6 +210,8 @@ Definition EssentiallySurjectiveOnObjects `(F:Functor(c1:=C1)(c2:=C2)(fobj:=Fobj
   forall o2:C2, { o1:C1 & (F o1) ≅ o2 }.
 
 (* Definition 7.1: (essentially) injective on objects *)
+(* TODO *)
+
 Class ConservativeFunctor `(F:Functor(c1:=C1)(c2:=C2)(fobj:=Fobj)) :=
   { cf_reflect_iso  : forall (a b:C1),  (F a) ≅ (F b) -> a ≅ b
   ; cf_reflect_iso1 : forall a b (i:(F a) ≅ (F b)), F \ #(cf_reflect_iso a b i) ~~ #i
