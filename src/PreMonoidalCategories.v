@@ -19,8 +19,8 @@ Class PreMonoidalCat `(bc:BinoidalCat(C:=C))(I:C) :=
 ; pmon_assoc           : forall a b, (bin_second a >>>> bin_first b) <~~~> (bin_first b >>>> bin_second a)
 ; pmon_cancelr         :                               (bin_first I) <~~~> functor_id C
 ; pmon_cancell         :                              (bin_second I) <~~~> functor_id C
-; pmon_pentagon        : Pentagon (fun a b c f => f ⋉ c) (fun a b c f => c ⋊ f) (fun a b c => #((pmon_assoc a c) b)⁻¹)
-; pmon_triangle        : Triangle (fun a b c f => f ⋉ c) (fun a b c f => c ⋊ f) (fun a b c => #((pmon_assoc a c) b)⁻¹)
+; pmon_pentagon        : Pentagon (fun a b c f => f ⋉ c) (fun a b c f => c ⋊ f) (fun a b c => #((pmon_assoc a c) b))
+; pmon_triangle        : Triangle (fun a b c f => f ⋉ c) (fun a b c f => c ⋊ f) (fun a b c => #((pmon_assoc a c) b))
                                   (fun a => #(pmon_cancell a)) (fun a => #(pmon_cancelr a))
 ; pmon_assoc_rr        :  forall a b, (bin_first  (a⊗b)) <~~~> (bin_first  a >>>> bin_first  b)
 ; pmon_assoc_ll        :  forall a b, (bin_second (a⊗b)) <~~~> (bin_second b >>>> bin_second a)
@@ -54,31 +54,31 @@ Implicit Arguments pmon_assoc   [ Ob Hom C bin_obj' bc I PreMonoidalCat ].
 Coercion pmon_bin : PreMonoidalCat >-> BinoidalCat.
 
 (* this turns out to be Exercise VII.1.1 from Mac Lane's CWM *)
-Lemma MacLane_ex_VII_1_1 `{mn:PreMonoidalCat(I:=EI)} d c
+Lemma MacLane_ex_VII_1_1 `{mn:PreMonoidalCat(I:=EI)} b a
   : 
-  let    α := fun a b c => #((pmon_assoc a c) b)⁻¹
-  in     α EI c d >>> #(pmon_cancell _) ⋉ _ ~~ #(pmon_cancell _).
+  let    α := fun a b c => #((pmon_assoc a c) b)
+  in     α a b EI >>> _ ⋊ #(pmon_cancelr _) ~~ #(pmon_cancelr _).
 
   intros.  simpl in α.
 
   (* following Mac Lane's hint, we aim for (λ >>> α >>> λ×1)~~(λ >>> λ) *)
-  set (epic _ (iso_epic (pmon_cancell (EI⊗(c⊗d))))) as q.
+  set (epic _ (iso_epic (pmon_cancelr ((a⊗b)⊗EI)))) as q.
     apply q.
     clear q.
 
   (* next, we show that the hint goal above is implied by the bottom-left 1/5th of the big whiteboard diagram *)
-  set (ni_commutes pmon_cancell (α EI c d)) as q.
+  set (ni_commutes pmon_cancelr (α a b EI)) as q.
     setoid_rewrite <- associativity.
     setoid_rewrite q.
     clear q.
     setoid_rewrite associativity.
 
-    set (ni_commutes pmon_cancell (#(pmon_cancell c) ⋉ d)) as q.
+    set (ni_commutes pmon_cancelr (a ⋊ #(pmon_cancelr b))) as q.
     simpl in q.
     setoid_rewrite q.
     clear q.
 
-    set (ni_commutes pmon_cancell (#(pmon_cancell (c⊗d)))) as q.
+    set (ni_commutes pmon_cancelr (#(pmon_cancelr (a⊗b)))) as q.
     simpl in q.
     setoid_rewrite q.
     clear q.
@@ -89,68 +89,59 @@ Lemma MacLane_ex_VII_1_1 `{mn:PreMonoidalCat(I:=EI)} d c
   (* now we carry out the proof in the whiteboard diagram, starting from the pentagon diagram *)
 
   (* top 2/5ths *)
-  assert (α EI EI (c⊗d) >>> α _ _ _ >>> (#(pmon_cancelr _) ⋉ _ ⋉ _) ~~ _ ⋊ #(pmon_cancell _) >>> α _ _ _).
-    set (pmon_triangle EI (c⊗d)) as tria.
+  assert (α (a⊗b) EI EI >>> α _ _ _ >>> (_ ⋊ (_ ⋊ #(pmon_cancell _))) ~~ #(pmon_cancelr _) ⋉ _ >>> α _ _ _).
+    set (pmon_triangle (a⊗b) EI) as tria.
     simpl in tria.
-    setoid_rewrite <- tria.
-    clear tria.
     unfold α; simpl.
-    set (ni_commutes (pmon_assoc_rr c d) #(pmon_cancelr EI)) as x.
-    simpl in x.
-    setoid_rewrite pmon_coherent_r in x.
-    simpl in x.
+    setoid_rewrite tria.
+    clear tria.
     setoid_rewrite associativity.
-    setoid_rewrite x.
-    clear x.
-    reflexivity.
+    apply comp_respects; try reflexivity.
+    set (ni_commutes (pmon_assoc_ll a b) #(pmon_cancell EI)) as x.
+    simpl in x.
+    setoid_rewrite pmon_coherent_l in x.
+    apply x.
 
   (* bottom 3/5ths *)
-  assert (_ ⋊ α _ _ _ >>> α EI (EI⊗c) d >>> α _ _ _ ⋉ _ >>> (#(pmon_cancelr _) ⋉ _ ⋉ _) ~~ 
-          _ ⋊ α _ _ _ >>> _ ⋊ (#(pmon_cancell _) ⋉ _) >>> α _ _ _ ).
+  assert (((#((pmon_assoc a EI) b) ⋉ EI >>> #((pmon_assoc a EI) (b ⊗ EI))) >>>
+    a ⋊ #((pmon_assoc b EI) EI)) >>> a ⋊ (b ⋊ #(pmon_cancell EI))
+    ~~ α _ _ _ ⋉ _ >>> (_ ⋊ #(pmon_cancelr _)) ⋉ _ >>> α _ _ _).
+
     unfold α; simpl.
     repeat setoid_rewrite associativity.
     apply comp_respects; try reflexivity.
 
-    set (ni_commutes (pmon_assoc EI d) (#(pmon_cancell c) )) as x.
+    set (ni_commutes (pmon_assoc a EI) (#(pmon_cancelr b) )) as x.
     simpl in x.
     setoid_rewrite <- associativity.
-    apply iso_shift_right' in x.
-    symmetry in x.
-    setoid_rewrite <- associativity in x.
-    apply iso_shift_left' in x.
     simpl in x.
     setoid_rewrite <- x.
     clear x.
 
     setoid_rewrite associativity.
     apply comp_respects; try reflexivity.
-    setoid_rewrite (fmor_preserves_comp (-⋉d)).
-    apply (fmor_respects (-⋉d)).
+    setoid_rewrite (fmor_preserves_comp (a⋊-)).
+    apply (fmor_respects (a⋊-)).
 
-    set (pmon_triangle EI c) as tria.
+    set (pmon_triangle b EI) as tria.
     simpl in tria.
+    symmetry.
     apply tria.
 
-  set (pmon_pentagon EI EI c d) as penta. unfold pmon_pentagon in penta. simpl in penta.
+  set (pmon_pentagon a b EI EI) as penta. unfold pmon_pentagon in penta. simpl in penta.
 
-  set (@comp_respects _ _ _ _ _ _ _ _ penta (#(pmon_cancelr EI) ⋉ c ⋉ d) (#(pmon_cancelr EI) ⋉ c ⋉ d)) as qq.
+  set (@comp_respects _ _ _ _ _ _ _ _ penta (a ⋊ (b ⋊ #(pmon_cancell EI))) (a ⋊ (b ⋊ #(pmon_cancell EI)))) as qq.
     unfold α in H.
     setoid_rewrite H in qq.
     unfold α in H0.
     setoid_rewrite H0 in qq.
     clear H0 H.
 
-  assert (EI⋊(iso_backward ((pmon_assoc EI d) c) >>> #(pmon_cancell c) ⋉ d) ~~ EI⋊ #(pmon_cancell (c ⊗ d)) ).
-    apply (@monic _ _ _ _ _ _ (iso_monic (iso_inv _ _ ((pmon_assoc EI d) c)))).
-
-  symmetry.
-    setoid_rewrite <- fmor_preserves_comp.
-    apply qq; try reflexivity.
+  unfold α.
+    apply (monic _ (iso_monic ((pmon_assoc a EI) b))).
+    apply qq.
     clear qq penta.
-
-  setoid_rewrite fmor_preserves_comp.
-    apply H.
-
+    reflexivity.
     Qed.
 
 Class PreMonoidalFunctor

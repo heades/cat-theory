@@ -127,7 +127,10 @@ Lemma ecomp_is_functorial `{ec:ECategory}{a b c}{x}(f:EI~~{V}~~>(a~~>b))(g:EI~~{
    apply ibs.
    clear ibs.
 
-   setoid_rewrite (MacLane_ex_VII_1_1 (x~~>a) (a~~>b)).
+   set (MacLane_ex_VII_1_1 (a~~>b) (x~~>a)) as q.
+   simpl in q.
+   setoid_rewrite <- q.
+   clear q.
    setoid_rewrite juggle3.
    set (fmor_preserves_comp ((x ~~> a) ⋊-)) as q.
    simpl in q.

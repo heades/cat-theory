@@ -16,14 +16,14 @@ Section Coherence.
            {bobj:C->C->C}
            (first  : forall a b c:C, (a~~{C}~~>b) -> ((bobj a c)~~{C}~~>(bobj b c)))
            (second : forall a b c:C, (a~~{C}~~>b) -> ((bobj c a)~~{C}~~>(bobj c b)))
-           (assoc  : forall a b c:C, (bobj a (bobj b c)) ~~{C}~~> (bobj (bobj a b) c)).
+           (assoc  : forall a b c:C, (bobj (bobj a b) c) ~~{C}~~> (bobj a (bobj b c))).
 
   Record Pentagon :=
-  { pentagon :   forall a b c d,                 (assoc a _ _ )  >>>
-                                                 (assoc _ _ _ )  ~~
-                                   (second _ _ a (assoc b c d )) >>>
-                                                 (assoc _ _ _ )  >>>
-                                   (first  _ _ _ (assoc a b _ ))
+  { pentagon :   forall a b c d,    (first _ _ d (assoc a b c ))  >>>
+                                                 (assoc a _ d )   >>>
+                                   (second _ _ a (assoc b c d )) 
+                                              ~~ (assoc _ c d )   >>>
+                                                 (assoc a b _ )
   }.
 
   Context {I:C}
@@ -31,7 +31,7 @@ Section Coherence.
           (cancelr : forall a    :C,              (bobj a I) ~~{C}~~> a).
 
   Record Triangle :=
-  { triangle :  forall a b, (assoc a I b) >>> (first _ _ b (cancelr a)) ~~ (second _ _ a (cancell b))
+  { triangle :  forall a b, (first _ _ b (cancelr a)) ~~ (assoc a I b) >>> (second _ _ a (cancell b))
 
   (* 
    * This is taken as an axiom in Mac Lane, Categories for the Working
