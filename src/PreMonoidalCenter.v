@@ -40,7 +40,7 @@ Lemma central_morphisms_compose `{bc:BinoidalCat}{a b c}(f:a~>b)(g:b~>c)
 
 (* the central morphisms of a category constitute a subcategory *)
 Definition Center `(bc:BinoidalCat) : WideSubcategory bc (fun _ _ f => CentralMorphism f).
-  apply Build_SubCategory; intros.
+  apply Build_WideSubcategory; intros.
   apply Build_CentralMorphism; intros.
   abstract (setoid_rewrite (fmor_preserves_id(bin_first c));
               setoid_rewrite (fmor_preserves_id(bin_first d));
@@ -50,6 +50,54 @@ Definition Center `(bc:BinoidalCat) : WideSubcategory bc (fun _ _ f => CentralMo
               setoid_rewrite left_identity; setoid_rewrite right_identity; reflexivity).
   apply central_morphisms_compose; auto.
   Qed.
+
+(* if one half of an iso is central, so is the other half *)
+Lemma iso_central_both `{C:BinoidalCat}{a b:C}(i:a ≅ b) : CentralMorphism #i -> CentralMorphism #i⁻¹.
+  intro cm.
+  apply Build_CentralMorphism; intros; simpl.
+    etransitivity.  
+    symmetry.
+    apply right_identity.
+    setoid_rewrite associativity.
+    setoid_replace (id (a ⊗ d)) with ((#i >>> iso_backward i) ⋉ d).
+    setoid_rewrite <- fmor_preserves_comp.
+    setoid_rewrite <- associativity.
+    setoid_rewrite juggle3.
+    setoid_rewrite <- (centralmor_first(CentralMorphism:=cm)).
+    setoid_rewrite <- associativity.
+    setoid_rewrite (fmor_preserves_comp (-⋉c)).
+    apply comp_respects; try reflexivity.
+    etransitivity; [ idtac | apply left_identity ].
+    apply comp_respects; try reflexivity.
+    etransitivity; [ idtac | apply (fmor_preserves_id (-⋉c)) ].
+    apply (fmor_respects (-⋉c)).
+    apply iso_comp2.
+    symmetry.
+    etransitivity; [ idtac | apply (fmor_preserves_id (-⋉d)) ].
+    apply (fmor_respects (-⋉d)).
+    apply iso_comp1.
+
+    etransitivity.  
+    symmetry.
+    apply left_identity.
+    setoid_replace (id (c ⊗ b)) with (c ⋊ (iso_backward i >>> #i)).
+    setoid_rewrite <- fmor_preserves_comp.
+    setoid_rewrite juggle3.
+    setoid_rewrite <- (centralmor_second(CentralMorphism:=cm)).
+    setoid_rewrite associativity.
+    apply comp_respects; try reflexivity.
+    setoid_rewrite associativity.
+    setoid_rewrite (fmor_preserves_comp (d⋊-)).
+    etransitivity; [ idtac | apply right_identity ].
+    apply comp_respects; try reflexivity.
+    etransitivity; [ idtac | apply (fmor_preserves_id (d⋊-)) ].
+    apply (fmor_respects (d⋊-)).
+    apply iso_comp1.
+    symmetry.
+    etransitivity; [ idtac | apply (fmor_preserves_id (c⋊-)) ].
+    apply (fmor_respects (c⋊-)).
+    apply iso_comp2.
+    Qed.
 
 Lemma first_preserves_centrality `{C:PreMonoidalCat}{a}{b}(f:a~~{C}~~>b){c} : CentralMorphism f -> CentralMorphism (f ⋉ c).
   intro cm.
@@ -322,7 +370,13 @@ Section Center_is_Monoidal.
     Defined.
 
   Definition Center_is_PreMonoidal : PreMonoidalCat Center_is_Binoidal pmI.
-    apply PreMonoidalWideSubcategory_PreMonoidal.
+    apply PreMonoidalWideSubcategory_PreMonoidal; intros.
+    apply pmon_assoc_central.
+    apply iso_central_both; apply pmon_assoc_central.
+    apply pmon_cancell_central.
+    apply iso_central_both; apply pmon_cancell_central.
+    apply pmon_cancelr_central.
+    apply iso_central_both; apply pmon_cancelr_central.
     Defined.
 
   Definition Center_is_Monoidal : MonoidalCat Center_is_PreMonoidal.
