@@ -32,21 +32,19 @@ Coercion mon_pm          : MonoidalCat >-> PreMonoidalCat.
 Coercion mon_commutative : MonoidalCat >-> CommutativeCat.
 
 (* a monoidal functor is just a premonoidal functor between premonoidal categories which happen to be monoidal *)
-Definition MonoidalFunctor `(m1:MonoidalCat) `(m2:MonoidalCat) := PreMonoidalFunctor m1 m2.
+Definition MonoidalFunctor `(m1:MonoidalCat) `(m2:MonoidalCat) {fobj}(F:Functor m1 m2 fobj) := PreMonoidalFunctor m1 m2 F.
 
 Definition MonoidalFunctorsCompose
-  `{M1   :MonoidalCat(C:=C1)}
-  `{M2   :MonoidalCat(C:=C2)}
+  `{PM1   :MonoidalCat(C:=C1)}
+  `{PM2   :MonoidalCat(C:=C2)}
    {fobj12:C1 -> C2                    }
-   (MF12 :MonoidalFunctor M1 M2 fobj12)
-  `{M3   :MonoidalCat(C:=C3)}
+   {PMFF12:Functor C1 C2 fobj12        }
+   (PMF12 :MonoidalFunctor PM1 PM2 PMFF12)
+  `{PM3   :MonoidalCat(C:=C3)}
    {fobj23:C2 -> C3                    }
-   (MF23 :MonoidalFunctor M2 M3 fobj23)
-   : MonoidalFunctor M1 M3 (fobj23 ○ fobj12).
-   apply PreMonoidalFunctorsCompose.
-   apply MF12.
-   apply MF23.
-   Defined.
+   {PMFF23:Functor C2 C3 fobj23        }
+   (PMF23 :MonoidalFunctor PM2 PM3 PMFF23)
+   := PreMonoidalFunctorsCompose PMF12 PMF23.
 
 Section BinoidalCat_from_Bifunctor.
   Context `{C:Category}{Fobj}(F:Functor (C ×× C) C Fobj).

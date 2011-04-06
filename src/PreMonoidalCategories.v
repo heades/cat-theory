@@ -145,10 +145,11 @@ Lemma MacLane_ex_VII_1_1 `{mn:PreMonoidalCat(I:=EI)} b a
     Qed.
 
 Class PreMonoidalFunctor
-`(PM1:PreMonoidalCat(C:=C1)(I:=I1))
-`(PM2:PreMonoidalCat(C:=C2)(I:=I2))
- (fobj : C1 -> C2                 ) :=
-{ mf_F          :> Functor C1 C2 fobj
+`(PM1  : PreMonoidalCat(C:=C1)(I:=I1))
+`(PM2  : PreMonoidalCat(C:=C2)(I:=I2))
+ {fobj : C1 -> C2                 }
+ (F    : Functor C1 C2 fobj       ) :=
+{ mf_F          := F
 ; mf_i          :  I2 ≅ mf_F I1
 ; mf_first      :  ∀ a,              mf_F >>>> bin_first  (mf_F a)  <~~~>  bin_first  a >>>> mf_F
 ; mf_second     :  ∀ a,              mf_F >>>> bin_second (mf_F a)  <~~~>  bin_second a >>>> mf_F
@@ -166,10 +167,12 @@ Section PreMonoidalFunctorsCompose.
   `{PM1   :PreMonoidalCat(C:=C1)(I:=I1)}
   `{PM2   :PreMonoidalCat(C:=C2)(I:=I2)}
    {fobj12:C1 -> C2                    }
-   (PMF12 :PreMonoidalFunctor PM1 PM2 fobj12)
+   {PMFF12:Functor C1 C2 fobj12        }
+   (PMF12 :PreMonoidalFunctor PM1 PM2 PMFF12)
   `{PM3   :PreMonoidalCat(C:=C3)(I:=I3)}
    {fobj23:C2 -> C3                    }
-   (PMF23 :PreMonoidalFunctor PM2 PM3 fobj23).
+   {PMFF23:Functor C2 C3 fobj23        }
+   (PMF23 :PreMonoidalFunctor PM2 PM3 PMFF23).
 
   Definition compose_mf := PMF12 >>>> PMF23.
 
@@ -344,9 +347,8 @@ Section PreMonoidalFunctorsCompose.
       Implicit Arguments id [[Ob][Hom][Category]].
 
   (* this proof is really gross; I will write a better one some other day *)
-  Instance PreMonoidalFunctorsCompose : PreMonoidalFunctor PM1 PM3 (fobj23 ○ fobj12) :=
+  Instance PreMonoidalFunctorsCompose : PreMonoidalFunctor PM1 PM3 compose_mf :=
   { mf_i      := compose_mf_i
-  ; mf_F      := compose_mf
   ; mf_first  := compose_mf_first  
   ; mf_second := compose_mf_second }.
 
