@@ -4,7 +4,6 @@
 
 Generalizable All Variables.
 Require Import Preamble.
-Require Import General.
 Require Import Categories_ch1_3.
 Require Import Functors_ch1_4.
 Require Import Isomorphisms_ch1_5.

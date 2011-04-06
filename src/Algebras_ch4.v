@@ -7,7 +7,6 @@
 
 Generalizable All Variables.
 Require Import Preamble.
-Require Import General.
 
 (* very handy *)
 (*
@@ -17,7 +16,7 @@ Fixpoint listOfTypesToType (args:list Type)(ret:Type) : Type :=
   | a::b => a -> listOfTypesToType b ret
   end.
 *)
-
+(*
 Section Algebras.
 
 Local Notation "a :: b" := (vec_cons a b).
@@ -242,5 +241,5 @@ Definition AMCat_from_MCat `(C:MCat V) : AMCat.
 
 *)
 End Algebras.
-
+*)
 

@@ -1,6 +1,5 @@
 Generalizable All Variables.
 Require Import Preamble.
-Require Import General.
 Require Import Categories_ch1_3.
 
 (******************************************************************************)
