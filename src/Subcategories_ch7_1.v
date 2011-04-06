@@ -230,7 +230,6 @@ Definition WeaklyMonic
     G >>>> F ≃ H >>>> F
     -> G ≃ H.
 
-(*
 Section FullFaithfulFunctor_section.
   Context `(F:Functor(c1:=C1)(c2:=C2)(fobj:=Fobj)).
   Context  (F_full:FullFunctor F).
@@ -246,23 +245,10 @@ Section FullFaithfulFunctor_section.
     auto.
     Qed.
 
-  Definition ff_functor_section_fobj (a:FullImage F) : C1 := projT1 (projT2 a).
-
-  Definition ff_functor_section_fmor {a b:FullImage F} (f:a~~{FullImage F}~~>b)
-    : (ff_functor_section_fobj a)~~{C1}~~>(ff_functor_section_fobj b).
-    destruct a as [ a1 [ a2 a3 ] ].
-    destruct b as [ b1 [ b2 b3 ] ].
+  Definition ff_functor_section_fmor {a b:FullImage F} (f:a~~{FullImage F}~~>b) : a~~{C1}~~>b.
     set (@ff_invert _ _ _ _ _ _ _ _ F_full _ _ f) as f'.
-    destruct a as [ a1 [ a2 a3 ] ].
-    subst.
-    unfold ff_functor_section_fobj.
-    simpl.
-    destruct b as [ b1 [ b2 b3 ] ].
-    subst.
-    unfold ff_functor_section_fobj.
-    simpl.
-    apply (@ff_invert _ _ _ _ _ _ _ _ F_full).
-    apply f.
+    destruct f'.
+    apply x.
     Defined.
 
   Lemma ff_functor_section_respectful {a2 b2 c2 : C1}
@@ -285,32 +271,22 @@ Section FullFaithfulFunctor_section.
     reflexivity.
     Qed.
 
-  Instance ff_functor_section_functor : Functor (FullImage F) C1 ff_functor_section_fobj :=
+  Instance ff_functor_section_functor : Functor (FullImage F) C1 (fun x => x) :=
     { fmor := fun a b f => ff_functor_section_fmor f }.
-    abstract (intros;
-      destruct a; destruct b; destruct s; destruct s0; simpl in *;
-      subst; simpl; set (F_full x1 x2 f) as ff1; set (F_full x1 x2 f') as ff2; destruct ff1; destruct ff2;
-      apply F_faithful;
-      etransitivity; [ apply e | idtac ];
-      symmetry;
-      etransitivity; [ apply e0 | idtac ];
-      symmetry; auto).
-    abstract (intros;
-      simpl;
-      destruct a as [ a1 [ a2 a3 ] ];
-      subst;
-      simpl;
-      apply ff_functor_section_id_preserved).
-    abstract (intros;
-      destruct a as [ a1 [ a2 a3 ] ];
-      destruct b as [ b1 [ b2 b3 ] ];
-      destruct c as [ c1 [ c2 c3 ] ];
-      subst;
-      simpl in *;
-      simpl in *;
-      apply ff_functor_section_respectful).
+    intros.
+      unfold ff_functor_section_fmor; simpl.
+      destruct (F_full a b f).
+      destruct (F_full a b f').
+      apply F_faithful.
+      setoid_rewrite e0.
+      setoid_rewrite e.
+      auto.
+    intros; simpl; subst.
+      apply ff_functor_section_id_preserved.
+    intros; simpl in *.
+      apply ff_functor_section_respectful.
       Defined.
-
+(*
   Lemma ff_functor_section_splits_helper (a2 b2:C1)(f:existT (fun d : C2, {c : C1 & Fobj c = d}) (Fobj a2)
         (existT (fun c : C1, Fobj c = Fobj a2) a2 (eq_refl _)) ~~{ 
       FullImage F
@@ -322,74 +298,40 @@ Section FullFaithfulFunctor_section.
     destruct qq.
     apply e.
     Qed.
-
+*)
   Lemma ff_functor_section_splits : (ff_functor_section_functor >>>> RestrictToImage F) ~~~~ functor_id _.
-    unfold EqualFunctors.
-    intros.
-    simpl.
-    destruct a as [ a1 [ a2 a3 ] ].
-    destruct b as [ b1 [ b2 b3 ] ].
-    subst.
-    simpl in *.
-    simpl in *.
-    apply heq_morphisms_intro.
-    simpl.
-    unfold RestrictToImage_fmor; simpl.
-    etransitivity; [ idtac | apply H ].
-    clear H.
-    clear f'.
-    apply ff_functor_section_splits_helper.
+    unfold EqualFunctors; intros; simpl.
+    unfold ff_functor_section_fmor; simpl.
+    destruct (F_full a b f).
+    idtac.
+    apply (@heq_morphisms_intro _ _ (FullImage F) a b).
+    unfold eqv; simpl.
+    setoid_rewrite e.
+    apply H.
     Qed.
-
-  Definition ff_functor_section_splits_niso_helper a : ((ff_functor_section_functor >>>> RestrictToImage F) a ≅ (functor_id (FullImage F)) a).
-    intros; simpl.
-    unfold functor_fobj.
-    unfold ff_functor_section_fobj.
-    unfold RestrictToImage_fobj.
-    destruct a as [ a1 [ a2 a3 ] ].
-    simpl.
-    subst.
-    unfold functor_fobj.
-    apply iso_id.
-    Defined.
 
   Lemma ff_functor_section_splits_niso : (ff_functor_section_functor >>>> RestrictToImage F) ≃ functor_id _.
     intros; simpl.
-    exists ff_functor_section_splits_niso_helper.
-    intros.
-    simpl in *.
-    destruct A as [ a1 [ a2 a3 ] ].
-    destruct B as [ b1 [ b2 b3 ] ].
-    simpl.
-    unfold RestrictToImage_fmor; simpl.
+    exists iso_id; intros.
+    symmetry.
+    unfold functor_comp; simpl.
     setoid_rewrite left_identity.
     setoid_rewrite right_identity.
-    set (F_full a2 b2 x) as qr.
-    destruct qr.
-    symmetry; auto.
+    unfold ff_functor_section_fmor.
+    destruct (F_full A B f).
+    auto.
     Qed.
-
-  Definition ff_functor_section_splits_niso_helper' a
-    : ((RestrictToImage F >>>> ff_functor_section_functor) a ≅ (functor_id _) a).
-    intros; simpl.
-    unfold functor_fobj.
-    unfold ff_functor_section_fobj.
-    unfold RestrictToImage_fobj.
-    simpl.
-    apply iso_id.
-    Defined.
 
   Lemma ff_functor_section_splits_niso' : (RestrictToImage F >>>> ff_functor_section_functor) ≃ functor_id _.
     intros; simpl.
-    exists ff_functor_section_splits_niso_helper'.
-    intros.
-    simpl in *.
+    exists iso_id; intros.
+    symmetry.
+    unfold functor_comp; simpl.
     setoid_rewrite left_identity.
     setoid_rewrite right_identity.
-    set (F_full _ _ (F \ f)) as qr.
-    destruct qr.
-    apply F_faithful in e.
-    symmetry.
+    unfold ff_functor_section_fmor.
+    destruct (F_full A B (F \ f)).
+    apply F_faithful.
     auto.
     Qed.
 
@@ -426,13 +368,13 @@ Section FullFaithfulFunctor_section.
     apply if_right_identity.
     eapply if_inv.
     apply (if_comp(F2:=G>>>>(RestrictToImage F >>>> ff_functor_section_functor))).
-    apply (@if_respects _ _ _ _ _ _ _ _ _ _ G _ G _ (functor_id C1) _ (RestrictToImage F >>>> ff_functor_section_functor)).
+    apply (if_respects G G (functor_id C1) (RestrictToImage F >>>> ff_functor_section_functor)).
     apply if_id.
     apply if_inv.
     apply ff_functor_section_splits_niso'.
     apply if_inv.
     apply (if_comp(F2:=H0>>>>(RestrictToImage F >>>> ff_functor_section_functor))).
-    apply (@if_respects _ _ _ _ _ _ _ _ _ _ H0 _ H0 _ (functor_id C1) _ (RestrictToImage F >>>> ff_functor_section_functor)).
+    apply (if_respects H0 H0 (functor_id C1) (RestrictToImage F >>>> ff_functor_section_functor)).
     apply if_id.
     apply if_inv.
     apply ff_functor_section_splits_niso'.
@@ -440,7 +382,7 @@ Section FullFaithfulFunctor_section.
       ((H0 >>>> (RestrictToImage F >>>> ff_functor_section_functor))
         ≃ ((H0 >>>> RestrictToImage F) >>>> ff_functor_section_functor)).
     apply if_inv.
-    apply if_associativity.
+    apply (if_associativity H0 (RestrictToImage F) ff_functor_section_functor).
     apply (if_comp H2).
     clear H2.
     apply if_inv.
@@ -448,16 +390,20 @@ Section FullFaithfulFunctor_section.
       ((G >>>> (RestrictToImage F >>>> ff_functor_section_functor))
         ≃ ((G >>>> RestrictToImage F) >>>> ff_functor_section_functor)).
     apply if_inv.
-    apply if_associativity.
+    apply (if_associativity G (RestrictToImage F) ff_functor_section_functor).
     apply (if_comp H2).
     clear H2.
-    apply if_respects.
+    apply (if_respects (G >>>> RestrictToImage F) (H0 >>>> RestrictToImage F)
+      ff_functor_section_functor ff_functor_section_functor).
     apply if_fullimage.
     apply H1.
-    apply if_id.
+    simpl.
+    exists (ni_id _).
+    intros.
+    simpl.
+    setoid_rewrite left_identity.
+    setoid_rewrite right_identity.
+    reflexivity.
     Qed.
 
-  Opaque ff_functor_section_splits_niso_helper.
-
 End FullFaithfulFunctor_section.
-*)
