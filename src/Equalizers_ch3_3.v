@@ -1,5 +1,5 @@
 Generalizable All Variables.
-Require Import Preamble.
+Require Import Notations.
 
 (******************************************************************************)
 (* Chapter 3.3: Equalizers                                                    *)

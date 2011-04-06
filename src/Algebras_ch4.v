@@ -6,7 +6,7 @@
 (******************************************************************************)
 
 Generalizable All Variables.
-Require Import Preamble.
+Require Import Notations.
 
 (* very handy *)
 (*

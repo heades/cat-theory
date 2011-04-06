@@ -3,7 +3,7 @@
 (******************************************************************************)
 
 Generalizable All Variables.
-Require Import Preamble.
+Require Import Notations.
 
 (* definition 1.1 *)
 Class Category
