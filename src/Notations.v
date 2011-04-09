@@ -28,6 +28,7 @@ Reserved Notation "a ≅ b"                       (at level 70, right associativ
 Reserved Notation "C 'ᵒᴾ'"                      (at level 1).
 Reserved Notation "F \ a"                       (at level 20).
 Reserved Notation "f >>> g"                     (at level 45).
+Reserved Notation "a >>≅>> b"                   (at level 45).
 Reserved Notation "a ~~ b"                      (at level 54).
 Reserved Notation "a ~> b"                      (at level 70, right associativity).
 Reserved Notation "a ≃ b"                       (at level 70, right associativity).

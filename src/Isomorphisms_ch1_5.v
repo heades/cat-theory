@@ -52,6 +52,7 @@ Definition iso_comp `{C:Category}{a b c:C}(i1:Isomorphic a b)(i2:Isomorphic b c)
     [ setoid_rewrite (iso_comp1 i1) | setoid_rewrite (iso_comp2 i2) ];
     reflexivity.
   Defined.
+Notation "a >>≅>> b" := (iso_comp a b).
 
 Definition functors_preserve_isos `{C1:Category}`{C2:Category}{Fo}(F:Functor C1 C2 Fo){a b:C1}(i:Isomorphic a b)
   : Isomorphic (F a) (F b).
