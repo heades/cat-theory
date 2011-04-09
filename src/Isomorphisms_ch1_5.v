@@ -118,3 +118,32 @@ Lemma iso_inv_inv `{C:Category}{a}{b}(i:a ≅ b) : #(i⁻¹)⁻¹ ~~ #i.
   unfold iso_inv; simpl.
   reflexivity.
   Qed.
+
+(* the next four lemmas are handy for setoid_rewrite; they let you avoid having to get the associativities right *)
+Lemma iso_comp2_right : forall `{C:Category}{a b}(i:a≅b) c (g:b~>c), iso_backward i >>> (iso_forward i >>> g) ~~ g.
+  intros.
+  setoid_rewrite <- associativity.
+  setoid_rewrite iso_comp2.
+  apply left_identity.
+  Qed.
+
+Lemma iso_comp2_left : forall `{C:Category}{a b}(i:a≅b) c (g:c~>b), (g >>> iso_backward i) >>> iso_forward i ~~ g.
+  intros.
+  setoid_rewrite associativity.
+  setoid_rewrite iso_comp2.
+  apply right_identity.
+  Qed.
+
+Lemma iso_comp1_right : forall `{C:Category}{a b}(i:a≅b) c (g:a~>c), iso_forward i >>> (iso_backward i >>> g) ~~ g.
+  intros.
+  setoid_rewrite <- associativity.
+  setoid_rewrite iso_comp1.
+  apply left_identity.
+  Qed.
+
+Lemma iso_comp1_left : forall `{C:Category}{a b}(i:a≅b) c (g:c~>a), (g >>> iso_forward i) >>> iso_backward i ~~ g.
+  intros.
+  setoid_rewrite associativity.
+  setoid_rewrite iso_comp1.
+  apply right_identity.
+  Qed.
