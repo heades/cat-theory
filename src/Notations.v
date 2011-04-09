@@ -51,6 +51,7 @@ Reserved Notation "a :: b"                      (at level 60, right associativit
 Reserved Notation "a ++ b"                      (at level 60, right associativity).
 Reserved Notation "f ○ g"                       (at level 100).
 Reserved Notation "f >>>> g"                    (at level 45).
+Reserved Notation "a >>⊗>> b"                   (at level 20).
 Reserved Notation "f **** g"                    (at level 40).
 Reserved Notation "C × D"                       (at level 40).
 Reserved Notation "C ×× D"                      (at level 45).

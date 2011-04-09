@@ -48,6 +48,7 @@ Class PreMonoidalCat `(bc:BinoidalCat(C:=C))(I:C) :=
  * might need extra versions of the triangle/pentagon diagrams.
  *)
 
+Implicit Arguments pmon_I       [ Ob Hom C bin_obj' bc I  ].
 Implicit Arguments pmon_cancell [ Ob Hom C bin_obj' bc I PreMonoidalCat ].
 Implicit Arguments pmon_cancelr [ Ob Hom C bin_obj' bc I PreMonoidalCat ].
 Implicit Arguments pmon_assoc   [ Ob Hom C bin_obj' bc I PreMonoidalCat ].
@@ -454,6 +455,7 @@ Section PreMonoidalFunctorsCompose.
       Defined.
 
 End PreMonoidalFunctorsCompose.
+Notation "a >>⊗>> b" := (PreMonoidalFunctorsCompose a b).
 
 
 (*******************************************************************************)
@@ -462,7 +464,7 @@ End PreMonoidalFunctorsCompose.
 Class BraidedCat `(mc:PreMonoidalCat) :=
 { br_niso        : forall a, bin_first a <~~~> bin_second a
 ; br_swap        := fun a b => ni_iso (br_niso b) a
-; triangleb      : forall a:C,     #(pmon_cancelr a) ~~ #(br_swap a (pmon_I(PreMonoidalCat:=mc))) >>> #(pmon_cancell a)
+; triangleb      : forall a:C,     #(pmon_cancelr a) ~~ #(br_swap a (pmon_I mc)) >>> #(pmon_cancell a)
 ; hexagon1       : forall {a b c}, #(pmon_assoc _ _ _) >>> #(br_swap a _) >>> #(pmon_assoc _ _ _)
                                    ~~ #(br_swap _ _) ⋉ c >>> #(pmon_assoc _ _ _) >>> b ⋊ #(br_swap _ _)
 ; hexagon2       : forall {a b c}, #(pmon_assoc _ _ _)⁻¹ >>> #(br_swap _ c) >>> #(pmon_assoc _ _ _)⁻¹
@@ -673,13 +675,27 @@ Section PreMonoidalWideSubcategory.
 
 End PreMonoidalWideSubcategory.
 
+Section IsoFullSubCategory.
+  Context `{C:Category}.
+  Context  {Pobj}(S:FullSubcategory C Pobj).
+
+  Definition iso_full {a b:C}(i:a≅b)(pa:Pobj a)(pb:Pobj b) : (existT _ _ pa) ≅ (existT _ _ pb).
+    set (#i : existT Pobj a pa ~~{S}~~> existT Pobj b pb) as i1.
+    set (iso_backward i : existT Pobj b pb ~~{S}~~> existT Pobj a pa) as i2.
+    refine {| iso_forward := i1 ; iso_backward := i2 |}.
+    unfold i1; unfold i2; unfold hom; simpl.
+      apply iso_comp1.
+    unfold i1; unfold i2; unfold hom; simpl.
+      apply iso_comp2.
+    Defined.
+End IsoFullSubCategory.
 
 (* a full subcategory inherits the premonoidal structure if it includes the unit object and is closed under object-pairing *)
-(*
 Section PreMonoidalFullSubcategory.
 
   Context `(pm:PreMonoidalCat(I:=pmI)).
   Context  {Pobj}(S:FullSubcategory pm Pobj).
+
   Context  (Pobj_unit:Pobj pmI).
   Context  (Pobj_closed:forall {a}{b}, Pobj a -> Pobj b -> Pobj (a⊗b)).
   Implicit Arguments Pobj_closed [[a][b]].
@@ -735,44 +751,178 @@ Section PreMonoidalFullSubcategory.
     { bin_first := PreMonoidalFullSubcategory_first
     ; bin_second := PreMonoidalFullSubcategory_second }.
 
+  Definition central_full {a b}(f:a~~{S}~~>b)
+    : @CentralMorphism _ _ _ _ pm (projT1 a) (projT1 b) f -> CentralMorphism f.
+    intro cm.
+    apply Build_CentralMorphism; simpl.
+    intros.
+      destruct a as [a apf].
+      destruct b as [b bpf].
+      destruct c as [c cpf].
+      destruct d as [d dpf].
+      simpl.
+      apply cm.
+    intros.
+      destruct a as [a apf].
+      destruct b as [b bpf].
+      destruct c as [c cpf].
+      destruct d as [d dpf].
+      simpl.
+      apply cm.
+      Defined.
+
+  Notation "a ⊕ b" := (Pobj_closed a b).
   Definition PreMonoidalFullSubcategory_assoc
     : forall a b,
       (PreMonoidalFullSubcategory_second a >>>> PreMonoidalFullSubcategory_first b) <~~~>
       (PreMonoidalFullSubcategory_first  b >>>> PreMonoidalFullSubcategory_second a).
-    Defined.
+      intros.
+      refine {| ni_iso := (fun (c:S) => iso_full S (pmon_assoc(PreMonoidalCat:=pm) _ _ _)
+        ((projT2 a⊕projT2 c)⊕projT2 b)
+        (projT2 a⊕(projT2 c⊕projT2 b))) |}.
+      intros; simpl.
+      destruct a as [a apf].
+      destruct b as [b bpf].
+      destruct A as [A Apf].
+      destruct B as [B Bpf].
+      apply (ni_commutes (pmon_assoc(PreMonoidalCat:=pm) a b) f).
+      Defined.
 
   Definition PreMonoidalFullSubcategory_assoc_ll
     : forall a b,
       PreMonoidalFullSubcategory_second (a⊗b) <~~~>
       PreMonoidalFullSubcategory_second b >>>> PreMonoidalFullSubcategory_second a.
-    intros.
-    Defined.
+      intros.
+      refine {| ni_iso := (fun (c:S) => iso_full S (pmon_assoc_ll(PreMonoidalCat:=pm) _ _ _)
+        ((projT2 a⊕projT2 b)⊕projT2 c)
+        (projT2 a⊕(projT2 b⊕projT2 c))
+      ) |}.
+      intros; simpl.
+      destruct a as [a apf].
+      destruct b as [b bpf].
+      destruct A as [A Apf].
+      destruct B as [B Bpf].
+      apply (ni_commutes (pmon_assoc_ll(PreMonoidalCat:=pm) a b) f).
+      Defined.
 
   Definition PreMonoidalFullSubcategory_assoc_rr
     : forall a b,
       PreMonoidalFullSubcategory_first (a⊗b) <~~~>
       PreMonoidalFullSubcategory_first a >>>> PreMonoidalFullSubcategory_first b.
-    intros.
-    Defined.
+      intros.
+      refine {| ni_iso := (fun (c:S) => iso_full S (pmon_assoc_rr(PreMonoidalCat:=pm) _ _ _)
+        (projT2 c⊕(projT2 a⊕projT2 b))
+        ((projT2 c⊕projT2 a)⊕projT2 b)
+      ) |}.
+      intros; simpl.
+      destruct a as [a apf].
+      destruct b as [b bpf].
+      destruct A as [A Apf].
+      destruct B as [B Bpf].
+      apply (ni_commutes (pmon_assoc_rr(PreMonoidalCat:=pm) a b) f).
+      Defined.
 
   Definition PreMonoidalFullSubcategory_I := existT _ pmI Pobj_unit.
 
+  Definition PreMonoidalFullSubcategory_cancelr_iso A
+    : (fun x : S => PreMonoidalFullSubcategory_bobj x (existT Pobj pmI Pobj_unit)) A ≅ (fun x : S => x) A.
+    destruct A.
+    apply (iso_full S).
+    apply pmon_cancelr.
+    Defined.
+
   Definition PreMonoidalFullSubcategory_cancelr
     : PreMonoidalFullSubcategory_first PreMonoidalFullSubcategory_I <~~~> functor_id _.
+    intros.
+    refine {| ni_iso := PreMonoidalFullSubcategory_cancelr_iso |}.
+    intros.
+    destruct A as [A Apf].
+    destruct B as [B Bpf].
+    simpl.
+    apply (ni_commutes (pmon_cancelr(PreMonoidalCat:=pm)) f).
+    Defined.
+
+  Definition PreMonoidalFullSubcategory_cancell_iso A
+    : (fun x : S => PreMonoidalFullSubcategory_bobj (existT Pobj pmI Pobj_unit) x) A ≅ (fun x : S => x) A.
+    destruct A.
+    apply (iso_full S).
+    apply pmon_cancell.
     Defined.
 
   Definition PreMonoidalFullSubcategory_cancell
     : PreMonoidalFullSubcategory_second PreMonoidalFullSubcategory_I <~~~> functor_id _.
+    intros.
+    refine {| ni_iso := PreMonoidalFullSubcategory_cancell_iso |}.
+    intros.
+    destruct A as [A Apf].
+    destruct B as [B Bpf].
+    simpl.
+    apply (ni_commutes (pmon_cancell(PreMonoidalCat:=pm)) f).
     Defined.
 
   Instance PreMonoidalFullSubcategory_PreMonoidal
     : PreMonoidalCat PreMonoidalFullSubcategory_is_Binoidal PreMonoidalFullSubcategory_I :=
-  { pmon_assoc           := PreMonoidalFullSubcategory_assoc 
-  ; pmon_assoc_rr        := PreMonoidalFullSubcategory_assoc_rr
-  ; pmon_assoc_ll        := PreMonoidalFullSubcategory_assoc_ll
-  ; pmon_cancelr         := PreMonoidalFullSubcategory_cancelr
-  ; pmon_cancell         := PreMonoidalFullSubcategory_cancell
-  }.
-  Defined.
+    { pmon_assoc           := PreMonoidalFullSubcategory_assoc 
+    ; pmon_assoc_rr        := PreMonoidalFullSubcategory_assoc_rr
+    ; pmon_assoc_ll        := PreMonoidalFullSubcategory_assoc_ll
+    ; pmon_cancelr         := PreMonoidalFullSubcategory_cancelr
+    ; pmon_cancell         := PreMonoidalFullSubcategory_cancell
+    }.
+    apply Build_Pentagon.
+    intros.
+      destruct a as [a apf].
+      destruct b as [b bpf].
+      destruct c as [c cpf].
+      destruct d as [d dpf].
+      simpl.
+      apply (pmon_pentagon(PreMonoidalCat:=pm)).
+
+    apply Build_Triangle.
+      intros.
+      destruct a as [a apf].
+      destruct b as [b bpf].
+      simpl.
+      apply (pmon_triangle(PreMonoidalCat:=pm)).
+      simpl.
+      apply (pmon_triangle(PreMonoidalCat:=pm)).
+
+    intros.
+      destruct a as [a apf].
+      destruct c as [c cpf].
+      destruct d as [d dpf].
+      simpl.
+      apply (pmon_coherent_r(PreMonoidalCat:=pm)).
+
+    intros.
+      destruct a as [a apf].
+      destruct c as [c cpf].
+      destruct d as [d dpf].
+      simpl.
+      apply (pmon_coherent_l(PreMonoidalCat:=pm)).
+
+    intros.
+      destruct a as [a apf].
+      destruct b as [b bpf].
+      destruct c as [c cpf].
+      simpl.
+      apply central_full.
+      simpl.
+      apply (pmon_assoc_central(PreMonoidalCat:=pm)).
+    
+    intros.
+      destruct a as [a apf].
+      simpl.
+      apply central_full.
+      simpl.
+      apply (pmon_cancelr_central(PreMonoidalCat:=pm)).
+
+    intros.
+      destruct a as [a apf].
+      simpl.
+      apply central_full.
+      simpl.
+      apply (pmon_cancell_central(PreMonoidalCat:=pm)).
+    Defined.
+
 End PreMonoidalFullSubcategory.
-*)
+
