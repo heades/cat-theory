@@ -25,7 +25,7 @@ Class FreydCategory
   `(C:CartesianCat(Ob:=Ob)(C:=C1)(bin_obj':=bobj))
 
    (* a premonoidal category K with the same objects (its unit object is 1 because the functor is both IIO and strict) *)
-  `(K:PreMonoidalCat(Ob:=Ob)(bin_obj':=bobj)(I:=pmon_I(PreMonoidalCat:=C)))
+  `(K:PreMonoidalCat(Ob:=Ob)(bin_obj':=bobj)(I:=pmon_I C))
 
    (* an identity-on-objects functor J:C->Z(K) *)
 := { fc_J       : Functor C (Center_is_Monoidal K) (fun x => x)
@@ -35,7 +35,7 @@ Class FreydCategory
 
    (* and strict (meaning the functor's coherence maps are identities) *)
    ; fc_strict_first   : forall a b, #(mf_first(PreMonoidalFunctor:=fc_mf_J) a b) ~~ id _  (* mf_consistent gives us mf_second *)
-(*   ; fc_strict_id      : #(mf_i(PreMonoidalFunctor:=fc_mf_J)) ~~ id _*)
+   ; fc_strict_id      : #(mf_i(PreMonoidalFunctor:=fc_mf_J)) ~~ id _
 
    ; fc_C       := C
    ; fc_K       := K
