@@ -46,6 +46,46 @@ Definition MonoidalFunctorsCompose
    (PMF23 :MonoidalFunctor PM2 PM3 PMFF23)
    := PreMonoidalFunctorsCompose PMF12 PMF23.
 
+Class MonoidalNaturalIsomorphism
+ `{C1:MonoidalCat}`{C2:MonoidalCat}
+ `(F1:!MonoidalFunctor(fobj:=fobj1) C1 C2 Func1)
+ `(F2:!MonoidalFunctor(fobj:=fobj2) C1 C2 Func2) :=
+{ mni_ni        : NaturalIsomorphism F1 F2
+; mni_commutes1 : forall A B,
+                   #(ni_iso (mf_first(PreMonoidalFunctor:=F1) B) A)  >>> #(ni_iso mni_ni (A⊗B)) ~~
+                   #(ni_iso mni_ni _) ⋉ _ >>> _ ⋊ #(ni_iso mni_ni _) >>> #(ni_iso (mf_first(PreMonoidalFunctor:=F2) B) A)
+; mni_commutes2 : forall A B,
+                   #(ni_iso (mf_second(PreMonoidalFunctor:=F1) A) B)  >>> #(ni_iso mni_ni (A⊗B)) ~~
+                   #(ni_iso mni_ni _) ⋉ _ >>> _ ⋊ #(ni_iso mni_ni _) >>> #(ni_iso (mf_second(PreMonoidalFunctor:=F2) A) B)
+}.
+Notation "F <~~⊗~~> G" := (@MonoidalNaturalIsomorphism _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ F _ _ G) : category_scope.
+
+(* an equivalence of categories via monoidal functors, but the natural iso isn't necessarily a monoidal natural iso *)
+Structure MonoidalEquivalence `{C1:MonoidalCat} `{C2:MonoidalCat} :=
+{ meqv_forward_fobj  : C1 -> C2
+; meqv_forward       : Functor C1 C2 meqv_forward_fobj
+; meqv_forward_mon   : PreMonoidalFunctor _ _ meqv_forward
+; meqv_backward_fobj : C2 -> C1
+; meqv_backward      : Functor C2 C1 meqv_backward_fobj
+; meqv_backward_mon  : PreMonoidalFunctor _ _ meqv_backward
+; meqv_comp1         : meqv_forward  >>>> meqv_backward ≃ functor_id _
+; meqv_comp2         : meqv_backward >>>> meqv_forward  ≃ functor_id _
+}.
+
+(* a monoidally-natural equivalence of categories *)
+(*
+Structure MonoidalNaturalEquivalence `{C1:MonoidalCat} `{C2:MonoidalCat} :=
+{ mneqv_forward_fobj  : C1 -> C2
+; mneqv_forward       : Functor C1 C2 mneqv_forward_fobj
+; mneqv_forward_mon   : PreMonoidalFunctor _ _ mneqv_forward
+; mneqv_backward_fobj : C2 -> C1
+; mneqv_backward      : Functor C2 C1 mneqv_backward_fobj
+; mneqv_backward_mon  : PreMonoidalFunctor _ _ mneqv_backward
+; mneqv_comp1         : mneqv_forward_mon  >>⊗>> mneqv_backward_mon <~~⊗~~> premonoidal_id _
+; mneqv_comp2         : mneqv_backward_mon >>⊗>> mneqv_forward_mon  <~~⊗~~> premonoidal_id _
+}.
+*)
+
 Section BinoidalCat_from_Bifunctor.
   Context `{C:Category}{Fobj}(F:Functor (C ×× C) C Fobj).
   Definition BinoidalCat_from_Bifunctor_first (a:C) : Functor C C (fun b => Fobj (pair_obj b a)).

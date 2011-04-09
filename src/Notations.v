@@ -35,6 +35,7 @@ Reserved Notation "a ≃≃ b"                      (at level 70, right associat
 Reserved Notation "a ~~> b"                     (at level 70, right associativity).
 Reserved Notation "F  ~~~> G"                   (at level 70, right associativity).
 Reserved Notation "F <~~~> G"                   (at level 70, right associativity).
+Reserved Notation "F <~~⊗~~> G"                 (at level 70, right associativity).
 Reserved Notation "a ⊗ b"                       (at level 40).
 Reserved Notation "a ⊗⊗ b"                      (at level 40).
 Reserved Notation "a ⊕  b"                      (at level 40).
