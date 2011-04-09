@@ -122,6 +122,25 @@ Section FullImage.
 
 End FullImage.
 
+(* any functor may be restricted to a subcategory of its domain *)
+Section RestrictDomain.
+
+  Context `{C:Category}.
+  Context `{D:Category}.
+  Context `(F:!Functor C D fobj).
+  Context  {Pmor}(S:WideSubcategory C Pmor).
+
+  Instance RestrictDomain : Functor S D fobj :=
+    { fmor  := fun a b f => F \ (projT1 f) }.
+    intros; destruct f; destruct f'; simpl in *.
+      apply fmor_respects; auto.
+    intros. simpl. apply fmor_preserves_id.
+    intros; simpl; destruct f; destruct g; simpl in *.
+      apply fmor_preserves_comp.
+    Defined.
+
+End RestrictDomain.
+
 (*
 Instance func_opSubcat `(c1:Category)`(c2:Category)`(SP:@SubCategory _ _ c2 Pobj Pmor)
   {fobj}(F:Functor c1⁽ºᑭ⁾ SP fobj) : Functor c1 SP⁽ºᑭ⁾ fobj :=
