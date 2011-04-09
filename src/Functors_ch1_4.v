@@ -59,7 +59,15 @@ Definition functor_comp
   Defined.
 Notation "f >>>> g" := (@functor_comp _ _ _ _ _ _ _ _ _ _ f _ g)   : category_scope.
 
-
+Lemma functor_comp_assoc `{C':Category}`{D:Category}`{E:Category}`{F:Category}
+  {F1obj}(F1:Functor C' D F1obj)
+  {F2obj}(F2:Functor D E F2obj)
+  {F3obj}(F3:Functor E F F3obj)
+  `(f:a~>b) :
+  ((F1 >>>> F2) >>>> F3) \ f ~~ (F1 >>>> (F2 >>>> F3)) \ f.
+  intros; simpl.
+  reflexivity.
+  Qed.
 
 (* this is like JMEq, but for the particular case of ~~; note it does not require any axioms! *)
 Inductive heq_morphisms `{c:Category}{a b:c}(f:a~>b) : forall {a' b':c}, a'~>b' -> Prop :=
