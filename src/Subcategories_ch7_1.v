@@ -120,6 +120,16 @@ Section FullImage.
     auto.
     Defined.
 
+  Lemma RestrictToImage_splits_niso : F ≃ (RestrictToImage >>>> FullImage_InclusionFunctor).
+    unfold IsomorphicFunctors.
+    exists (fun A => iso_id (fobj A)).
+    intros.
+    simpl.
+    setoid_rewrite left_identity.
+    setoid_rewrite right_identity.
+    reflexivity.
+    Qed.
+
 End FullImage.
 
 (* any functor may be restricted to a subcategory of its domain *)
