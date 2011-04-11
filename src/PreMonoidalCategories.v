@@ -924,5 +924,66 @@ Section PreMonoidalFullSubcategory.
       apply (pmon_cancell_central(PreMonoidalCat:=pm)).
     Defined.
 
+  Instance inclusion_first : ∀a : S,
+            FullSubcategoryInclusionFunctor S >>>>
+            - ⋉(FullSubcategoryInclusionFunctor S) a <~~~>
+            - ⋉a >>>> FullSubcategoryInclusionFunctor S
+    := { ni_iso := fun A => iso_id ((projT1 A)⊗(projT1 a)) }.
+    intros; simpl.
+    symmetry.
+    setoid_rewrite right_identity.
+    setoid_rewrite left_identity.
+    destruct A.
+    destruct B.
+    destruct a.
+    simpl.
+    reflexivity.
+    Defined.
+
+  Instance inclusion_second : ∀a : S,
+    FullSubcategoryInclusionFunctor S >>>>
+    (FullSubcategoryInclusionFunctor S) a ⋊- <~~~>
+    a ⋊- >>>> FullSubcategoryInclusionFunctor S
+    := { ni_iso := fun A => iso_id ((projT1 a)⊗(projT1 A)) }.
+    intros; simpl.
+    symmetry.
+    setoid_rewrite right_identity.
+    setoid_rewrite left_identity.
+    destruct A.
+    destruct B.
+    destruct a.
+    simpl.
+    reflexivity.
+    Defined.
+
+  (* Curiously, the inclusion functor for a PREmonoidal category isn't necessarily premonoidal (it might fail to preserve
+   * the center.  But in the monoidal case we're okay *)
+  Instance PreMonoidalFullSubcategoryInclusionFunctor_PreMonoidal (mc:CommutativeCat pm)
+    : PreMonoidalFunctor PreMonoidalFullSubcategory_PreMonoidal pm (FullSubcategoryInclusionFunctor S) :=
+    { mf_i          := iso_id _
+    ; mf_first      := inclusion_first
+    ; mf_first      := inclusion_second
+    }.
+    intros; destruct a; destruct b; reflexivity.
+    intros; destruct a; destruct b; simpl in *.
+      apply mc.
+    intros; destruct b; simpl.
+      setoid_rewrite right_identity.
+      setoid_rewrite fmor_preserves_id.
+      setoid_rewrite left_identity.
+      reflexivity.
+    intros; destruct a; simpl.
+      setoid_rewrite right_identity.
+      setoid_rewrite fmor_preserves_id.
+      setoid_rewrite left_identity.
+      reflexivity.
+    intros; destruct a; destruct b; destruct c; simpl.
+      setoid_rewrite right_identity.
+      setoid_rewrite fmor_preserves_id.
+      setoid_rewrite left_identity.
+      setoid_rewrite right_identity.
+      reflexivity.
+      Defined.
+
 End PreMonoidalFullSubcategory.
 
