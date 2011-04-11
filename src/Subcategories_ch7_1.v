@@ -44,16 +44,15 @@ Instance IdentitySubCategory `(C:Category Ob Hom) : SubCategory C (fun _ => True
   intros; auto.
   intros; auto.
   Defined.
+*)
 (* the inclusion operation from a subcategory to its host is a functor *)
-Instance InclusionFunctor `(C:Category Ob Hom)`(SP:@SubCategory _ _ C Pobj Pmor)
+Instance FullSubcategoryInclusionFunctor `(SP:@FullSubcategory Ob Hom C Pobj)
   : Functor SP C (fun x => projT1 x) :=
-  { fmor := fun dom ran f => projT1 f }.
+  { fmor := fun dom ran f => f }.
   intros. unfold eqv in H. simpl in H. auto.
   intros. simpl. reflexivity.
   intros. simpl. reflexivity.
   Defined.
-*)
-
 
 (* a wide subcategory includes all objects, so it requires nothing more than a predicate on each hom-set *)
 Class WideSubcategory `(C:Category Ob Hom)(Pmor:forall a b:Ob, (a~>b) ->Type) : Type :=
