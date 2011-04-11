@@ -178,6 +178,28 @@ Section Bifunctor_from_MonoidalCat.
 End Bifunctor_from_MonoidalCat.
 
 
+Instance MonoidalFullSubcategory_Monoidal `(mc:MonoidalCat) {Pobj} Pobj_unit Pobj_closed V
+  : MonoidalCat (PreMonoidalFullSubcategory_PreMonoidal(Pobj:=Pobj) mc V Pobj_unit Pobj_closed).
+  apply Build_MonoidalCat.
+  apply Build_CommutativeCat.
+  intros.
+  idtac.
+  apply Build_CentralMorphism; intros.
+    destruct a.
+    destruct b.
+    destruct c.
+    destruct d.
+    simpl.
+    apply (centralmor_first(CentralMorphism:=commutative_central(CommutativeCat:=mon_commutative(MonoidalCat:=mc)) f)).
+
+    destruct a.
+    destruct b.
+    destruct c.
+    destruct d.
+    simpl.
+    apply (centralmor_first(CentralMorphism:=commutative_central(CommutativeCat:=mon_commutative(MonoidalCat:=mc)) g)).
+    Defined.
+
 Class DiagonalCat `(mc:MonoidalCat) :=
 { copy          :  forall (a:mc),   a~~{mc}~~>(bin_obj(BinoidalCat:=mc) a a)
 ; copy_natural1 :  forall {a}{b}(f:a~~{mc}~~>b)(c:mc), copy _ >>> f ⋉ a >>> b ⋊ f ~~ f >>> copy _
