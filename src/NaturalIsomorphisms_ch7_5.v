@@ -19,6 +19,17 @@ Implicit Arguments ni_commutes [Ob Hom Ob0 Hom0 C1 C2 Fobj1 Fobj2 F1 F2 A B].
 Coercion ni_iso : NaturalIsomorphism >-> Funclass.
 Notation "F <~~~> G" := (@NaturalIsomorphism _ _ _ _ _ _ _ _ F G) : category_scope.
 
+(* same as ni_commutes, but phrased in terms of inverses *)
+Lemma ni_commutes' `(ni:NaturalIsomorphism) : forall `(f:A~>B), F2 \ f >>> #(ni_iso ni B)⁻¹ ~~ #(ni_iso ni A)⁻¹ >>> F1 \ f.
+  intros.
+  apply iso_shift_right'.
+  setoid_rewrite <- associativity.
+  symmetry.
+  apply iso_shift_left'.
+  symmetry.
+  apply ni_commutes.
+  Qed.
+
 (* FIXME: Lemma 7.11: natural isos are natural transformations in which every morphism is an iso *)
 
 (* every natural iso is invertible, and that inverse is also a natural iso *)
