@@ -152,13 +152,13 @@ Class PreMonoidalFunctor
  (F    : Functor C1 C2 fobj       ) :=
 { mf_F          := F
 ; mf_i          :  I2 ≅ mf_F I1
-; mf_first      :  ∀ a,              mf_F >>>> bin_first  (mf_F a)  <~~~>  bin_first  a >>>> mf_F
-; mf_second     :  ∀ a,              mf_F >>>> bin_second (mf_F a)  <~~~>  bin_second a >>>> mf_F
-; mf_consistent :  ∀ a b,            #(mf_first a b) ~~ #(mf_second b a)
+; mf_first      :  forall a, mf_F >>>> bin_first  (mf_F a)  <~~~>  bin_first  a >>>> mf_F
+; mf_second     :  forall a, mf_F >>>> bin_second (mf_F a)  <~~~>  bin_second a >>>> mf_F
+; mf_consistent :  forall a b,            #(mf_first a b) ~~ #(mf_second b a)
 ; mf_center     :  forall `(f:a~>b), CentralMorphism f -> CentralMorphism (mf_F \ f)
-; mf_cancell    :  ∀ b,     #(pmon_cancell _) ~~ #mf_i ⋉ _ >>> #(mf_first  b I1) >>> mf_F \ #(pmon_cancell b)
-; mf_cancelr    :  ∀ a,     #(pmon_cancelr _) ~~ _ ⋊ #mf_i >>> #(mf_second a I1) >>> mf_F \ #(pmon_cancelr a)
-; mf_assoc      :  ∀ a b c, #(pmon_assoc _ _ _)  >>> _ ⋊ #(mf_first _ _) >>>        #(mf_second _ _) ~~
+; mf_cancell    :  forall b,     #(pmon_cancell _) ~~ #mf_i ⋉ _ >>> #(mf_first  b I1) >>> mf_F \ #(pmon_cancell b)
+; mf_cancelr    :  forall a,     #(pmon_cancelr _) ~~ _ ⋊ #mf_i >>> #(mf_second a I1) >>> mf_F \ #(pmon_cancelr a)
+; mf_assoc      :  forall a b c, #(pmon_assoc _ _ _)  >>> _ ⋊ #(mf_first _ _) >>>        #(mf_second _ _) ~~
                             #(mf_second _ _) ⋉ _  >>>     #(mf_first _ _) >>> mf_F \ #(pmon_assoc a c b)
 }.
 Coercion mf_F : PreMonoidalFunctor >-> Functor.
@@ -238,7 +238,7 @@ Section PreMonoidalFunctorsCompose.
 
   (* this proof is really gross; I will write a better one some other day *)
   Lemma mf_associativity_comp :
-   ∀a b c : C1,
+  forall a b c : C1,
    (#((pmon_assoc (compose_mf a) (compose_mf c)) (fobj23 (fobj12 b))) >>>
     compose_mf a ⋊ #((compose_mf_first c) b)) >>>
    #((compose_mf_second a) (b ⊗ c)) ~~
@@ -924,7 +924,7 @@ Section PreMonoidalFullSubcategory.
       apply (pmon_cancell_central(PreMonoidalCat:=pm)).
     Defined.
 
-  Instance inclusion_first : ∀a : S,
+  Instance inclusion_first : forall a : S,
             FullSubcategoryInclusionFunctor S >>>>
             - ⋉(FullSubcategoryInclusionFunctor S) a <~~~>
             - ⋉a >>>> FullSubcategoryInclusionFunctor S
@@ -940,7 +940,7 @@ Section PreMonoidalFullSubcategory.
     reflexivity.
     Defined.
 
-  Instance inclusion_second : ∀a : S,
+  Instance inclusion_second : forall a : S,
     FullSubcategoryInclusionFunctor S >>>>
     (FullSubcategoryInclusionFunctor S) a ⋊- <~~~>
     a ⋊- >>>> FullSubcategoryInclusionFunctor S

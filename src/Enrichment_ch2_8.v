@@ -371,9 +371,9 @@ Class EBinoidalCat `(ec:ECategory)(bobj   :  ec -> ec -> ec) :=
 }.
 
 Instance EBinoidalCat_is_binoidal `(ebc:EBinoidalCat(ec:=ec)) : BinoidalCat (Underlying ec) ebc_bobj.
-  apply Build_BinoidalCat.
-  apply (fun a => UnderlyingFunctor (ebc_first a)).
-  apply (fun a => UnderlyingFunctor (ebc_second a)).
+  apply Build_BinoidalCat.  
+  unfold ebc_bobj; remember (fun a => UnderlyingFunctor (ebc_first a)) as f; apply f.
+  unfold ebc_bobj; remember (fun a => UnderlyingFunctor (ebc_second a)) as f; apply f.
   Defined.
 
 Coercion EBinoidalCat_is_binoidal : EBinoidalCat >-> BinoidalCat.
@@ -392,8 +392,8 @@ Section EFibration.
    * "uniquely reflects factoring through morphisms with the same
    * codomain".
    *)
-  Definition Prone {e e'}(φ:EI~~{V}~~>(e'~~>e)) :=
-  forall e'' (ψ:EI~~{V}~~>(e''~~>e)) (g:(efobj e'')~~{B}~~>(efobj e')),
+  Definition Prone {e:Eob}{e'}(φ:EI~~{V}~~>(e'~~>e)) :=
+    forall (e'':Eob) (ψ:EI~~{V}~~>(e''~~>e)) (g:(efobj e'')~~{B}~~>(efobj e')),
        (comp(Category:=B) _ _ _ g (φ >>> (efunc F _ _))) ~~
        ψ >>> (efunc F _ _)
    ->  { χ:e''~~{E}~~>e' & ψ ~~ χ >>> φ & g ~~ comp(Category:=V) _ _ _ χ (efunc F e'' e') }.
@@ -431,4 +431,3 @@ Section EFibration.
    * Prone morphisms to Prone morphisms.
    *)
 End EFibration.
-

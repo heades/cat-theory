@@ -51,7 +51,7 @@ Definition functor_comp
   `(C2:Category)
   `(C3:Category)
   `(F:@Functor _ _ C1 _ _ C2 Fobj)`(G:@Functor _ _ C2 _ _ C3 Gobj) : Functor C1 C3 (Gobj ○ Fobj).
-  intros. apply (Build_Functor _ _ _ _ _ _ _ (fun a b m => G\(F\m)));
+   apply (Build_Functor _ _ _ _ _ _ _ (fun a b m => G\(F\m)));
    [ abstract (intros; setoid_rewrite H ; auto; reflexivity)
    | abstract (intros; repeat setoid_rewrite fmor_preserves_id; auto; reflexivity)
    | abstract (intros; repeat setoid_rewrite fmor_preserves_comp; auto; reflexivity)
@@ -62,12 +62,13 @@ Notation "f >>>> g" := (@functor_comp _ _ _ _ _ _ _ _ _ _ f _ g)   : category_sc
 Lemma functor_comp_assoc `{C':Category}`{D:Category}`{E:Category}`{F:Category}
   {F1obj}(F1:Functor C' D F1obj)
   {F2obj}(F2:Functor D E F2obj)
-  {F3obj}(F3:Functor E F F3obj)
-  `(f:a~>b) :
-  ((F1 >>>> F2) >>>> F3) \ f ~~ (F1 >>>> (F2 >>>> F3)) \ f.
+  {F3obj}(F3:Functor E F F3obj)  
+  `(f:a ~~{C'}~~> b) :
+  (((F1 >>>> F2) >>>> F3) \ f) ~~ ((F1 >>>> (F2 >>>> F3)) \ f).
+Proof.
   intros; simpl.
   reflexivity.
-  Qed.
+Qed.
 
 (* this is like JMEq, but for the particular case of ~~; note it does not require any axioms! *)
 Inductive heq_morphisms `{c:Category}{a b:c}(f:a~>b) : forall {a' b':c}, a'~>b' -> Prop :=
